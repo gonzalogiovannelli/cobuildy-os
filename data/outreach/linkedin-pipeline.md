@@ -1,13 +1,13 @@
 # LinkedIn Outreach Pipeline
 
-## Estados
-- `requested` → solicitud enviada, sin respuesta
-- `connected` → aceptó la solicitud, no le escribimos todavía
-- `messaged` → le mandamos el primer mensaje, esperando respuesta
-- `lead` → respondió, se crea person.md en /data/people
+## Statuses
+- `requested` → connection request sent, no reply yet
+- `connected` → accepted request, message not sent yet
+- `messaged` → first message sent, waiting for reply
+- `lead` → replied, create person.md in /data/people
 
 ## Pipeline
 
-| Nombre | LinkedIn | Empresa | Estado | Fecha contacto | Notas |
-|--------|----------|---------|--------|----------------|-------|
-|        |          |         |        |                |       |
+| Name | LinkedIn | Company | Status | Contact Date | Notes |
+|------|----------|---------|--------|--------------|-------|
+|      |          |         |        |              |       |
