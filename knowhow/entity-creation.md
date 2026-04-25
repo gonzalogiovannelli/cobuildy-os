@@ -23,3 +23,11 @@
 **Code:** INV-001 (sequential number)
 **Added to:** investor_id field in existing person.md
 **Additional fields:** ticket, instrument, geography, risk profile
+
+## Calendly Booking
+**When:** a new meeting is booked via Calendly
+**Action:** 
+- Run entity matching on name and email
+- If new → create person.md from template
+- Add log entry: YYYY-MM-DD | Calendly | Meeting booked for [date] | Prepare for call
+- Granola takes over when the meeting happens
