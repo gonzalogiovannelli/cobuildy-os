@@ -26,8 +26,7 @@ async function createProjectStructure(projectCode, city, promoter, parentId = nu
   console.log(`\nCreating project structure for ${projectCode}...`);
   const projectFolder = await createFolder(`${projectCode} - ${city} - ${promoter}`, parentId);
   await createFolder('Documents', projectFolder);
-  await createFolder('Calls', projectFolder);
-  await createFolder('Legal', projectFolder);
+await createFolder('Legal', projectFolder);
   await createFolder('Financial', projectFolder);
   console.log(`\nProject ${projectCode} structure ready.`);
   return projectFolder;
