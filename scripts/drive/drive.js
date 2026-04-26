@@ -58,10 +58,52 @@ async function listFolder(folderId) {
 
 module.exports = { createFolder, createProjectStructure, uploadFile, listFolder };
 
-// Test
-async function test() {
-  const rootId = await createFolder('Cobuildy OS - Test Environment');
-  await createProjectStructure('ES-001', 'Malaga', 'NZPromocion', rootId);
+if (require.main !== module) return;
+
+const [,, command, ...args] = process.argv;
+
+const commands = {
+  createProject: async ([code, city, promoter, parentId]) => {
+    if (!code || !city || !promoter) {
+      console.error('Usage: node drive.js createProject <code> <city> <promoter> [parentFolderId]');
+      process.exit(1);
+    }
+    await createProjectStructure(code, city, promoter, parentId || null);
+  },
+  createFolder: async ([name, parentId]) => {
+    if (!name) {
+      console.error('Usage: node drive.js createFolder <name> [parentFolderId]');
+      process.exit(1);
+    }
+    await createFolder(name, parentId || null);
+  },
+  listFolder: async ([folderId]) => {
+    if (!folderId) {
+      console.error('Usage: node drive.js listFolder <folderId>');
+      process.exit(1);
+    }
+    await listFolder(folderId);
+  },
+  uploadFile: async ([filePath, folderId]) => {
+    if (!filePath || !folderId) {
+      console.error('Usage: node drive.js uploadFile <filePath> <folderId>');
+      process.exit(1);
+    }
+    await uploadFile(filePath, folderId);
+  },
+};
+
+if (!command) {
+  console.error('Available commands: createProject, createFolder, listFolder, uploadFile');
+  process.exit(1);
 }
 
-test();
+if (!commands[command]) {
+  console.error(`Unknown command: ${command}`);
+  process.exit(1);
+}
+
+commands[command](args).catch(err => {
+  console.error(err.message);
+  process.exit(1);
+});
