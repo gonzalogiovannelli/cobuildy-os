@@ -1,5 +1,6 @@
 const { createProjectStructure, uploadFile, listFolder } = require('./scripts/drive/drive.js');
 const { listEmails, readEmail, searchEmails } = require('./scripts/email/email.js');
+const { listLeads, getLead, getLeadNotes, listContacts } = require('./scripts/kommo/kommo.js');
 
 const [,, mod, command, ...args] = process.argv;
 
@@ -65,6 +66,40 @@ const router = {
         console.log(`[${e.uid}] ${e.date}`);
         console.log(`  From: ${e.from}`);
         console.log(`  Subj: ${e.subject}${e.hasAttachment ? '  [attachment]' : ''}`);
+      });
+    },
+  },
+  kommo: {
+    listLeads: async ([limit, page]) => {
+      const leads = await listLeads(limit ? parseInt(limit) : 25, page ? parseInt(page) : 1);
+      if (!leads.length) { console.log('No leads found.'); return; }
+      leads.forEach(l => {
+        console.log(`[${l.id}] ${l.name}`);
+        console.log(`  Pipeline: ${l.pipeline}  →  ${l.status}`);
+        console.log(`  Owner: ${l.responsible_user}  |  Updated: ${l.updated_at}`);
+      });
+    },
+    getLead: async ([id]) => {
+      if (!id) { console.error('Usage: node cobuildy.js kommo getLead <id>'); process.exit(1); }
+      const lead = await getLead(id);
+      console.log(JSON.stringify(lead, null, 2));
+    },
+    getLeadNotes: async ([id]) => {
+      if (!id) { console.error('Usage: node cobuildy.js kommo getLeadNotes <id>'); process.exit(1); }
+      const notes = await getLeadNotes(id);
+      if (!notes.length) { console.log('No notes found.'); return; }
+      notes.forEach(n => {
+        console.log(`[${n.created_at}] ${n.created_by}  (${n.type})`);
+        if (n.text) console.log(`  ${n.text}`);
+      });
+    },
+    listContacts: async ([limit, page]) => {
+      const contacts = await listContacts(limit ? parseInt(limit) : 25, page ? parseInt(page) : 1);
+      if (!contacts.length) { console.log('No contacts found.'); return; }
+      contacts.forEach(c => {
+        console.log(`[${c.id}] ${c.name}`);
+        if (c.email) console.log(`  Email: ${c.email}`);
+        if (c.phone) console.log(`  Phone: ${c.phone}`);
       });
     },
   },
