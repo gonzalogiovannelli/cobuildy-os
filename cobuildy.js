@@ -1,6 +1,7 @@
 const { createProjectStructure, uploadFile, listFolder } = require('./scripts/drive/drive.js');
 const { listEmails, readEmail, searchEmails } = require('./scripts/email/email.js');
 const { listLeads, getLead, getLeadNotes, listContacts } = require('./scripts/kommo/kommo.js');
+const { readPipeline, getNewLeads } = require('./scripts/sheets/sheets.js');
 
 const [,, mod, command, ...args] = process.argv;
 
@@ -100,6 +101,33 @@ const router = {
         console.log(`[${c.id}] ${c.name}`);
         if (c.email) console.log(`  Email: ${c.email}`);
         if (c.phone) console.log(`  Phone: ${c.phone}`);
+      });
+    },
+  },
+  sheets: {
+    readPipeline: async ([spreadsheetId]) => {
+      if (!spreadsheetId) {
+        console.error('Usage: node cobuildy.js sheets readPipeline <spreadsheetId>');
+        process.exit(1);
+      }
+      const rows = await readPipeline(spreadsheetId);
+      if (!rows.length) { console.log('No rows found.'); return; }
+      rows.forEach(r => {
+        console.log(`[${r.num}] ${r.company_name} — ${r.employee_name}  (${r.status || 'no status'})`);
+        if (r.linkedin_profile) console.log(`  ${r.linkedin_profile}`);
+      });
+    },
+    getNewLeads: async ([spreadsheetId]) => {
+      if (!spreadsheetId) {
+        console.error('Usage: node cobuildy.js sheets getNewLeads <spreadsheetId>');
+        process.exit(1);
+      }
+      const leads = await getNewLeads(spreadsheetId);
+      if (!leads.length) { console.log('No new leads.'); return; }
+      leads.forEach(r => {
+        console.log(`[${r.num}] ${r.company_name} — ${r.employee_name}`);
+        console.log(`  Region: ${r.region}  |  Sent: ${r.connection_sent}`);
+        if (r.info) console.log(`  Info: ${r.info}`);
       });
     },
   },
