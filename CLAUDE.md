@@ -34,3 +34,10 @@ It replaces scattered information across WhatsApp, email, LinkedIn and Google Dr
 - An investor profile is created when a contact confirms investment interest
 - Log entries go in /data/projects/[code]/log.md
 - Investor feedback goes in /data/projects/[code]/feedback.md
+
+## MCP Servers
+
+### Granola
+- URL: https://mcp.granola.ai/mcp
+- Use for: querying meeting notes, listing meetings, searching meeting content
+- Available tools: query_granola_meetings, list_meetings, get_meetings
