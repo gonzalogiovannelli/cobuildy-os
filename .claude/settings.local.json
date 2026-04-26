@@ -6,7 +6,17 @@
       "Bash(mv /c/Users/Gonza/cobuildy-os/credentials.json /c/Users/Gonza/cobuildy-os/scripts/drive/credentials.json)",
       "Bash(mv /c/Users/Gonza/cobuildy-os/token.json /c/Users/Gonza/cobuildy-os/scripts/drive/token.json)",
       "Bash(mv /c/Users/Gonza/cobuildy-os/package.json /c/Users/Gonza/cobuildy-os/scripts/package.json)",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "Skill(update-config)",
+      "WebSearch",
+      "WebFetch(domain:mcp.granola.ai)",
+      "WebFetch(domain:docs.granola.ai)",
+      "mcp__granola__list_meetings",
+      "mcp__granola__get_meetings",
+      "mcp__granola__get_meeting_transcript"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "granola"
+  ]
 }
