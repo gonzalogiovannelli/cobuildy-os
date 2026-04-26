@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const _sdk = require('@anthropic-ai/sdk');
 const Anthropic = _sdk.default ?? _sdk;
 
-const { listEmails } = require('./email.js');
+const { listEmails, readEmail } = require('./email.js');
 
 const KEYWORDS = [
   'proyecto', 'inversión', 'financiación', 'equity',
@@ -24,6 +24,12 @@ function loadKnowhow() {
       return `=== ${f} ===\n(file not found — add this file to define the rules)`;
     }
   }).join('\n\n');
+}
+
+const BODY_LIMIT = 3000;
+
+function stripHtml(str) {
+  return str.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function isRelevant(email) {
@@ -48,12 +54,26 @@ Do not include any explanation, markdown, or code fences — only the JSON objec
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 async function analyzeEmail(email) {
-  const content = [
+  let full = null;
+  try {
+    full = await readEmail('INBOX', email.uid);
+  } catch {
+    // fall back to header-only if full fetch fails
+  }
+
+  const body = full ? stripHtml(full.body).slice(0, BODY_LIMIT) : '';
+  const attachmentList = full?.attachments.map(a => a.filename).join(', ') ?? '';
+
+  const lines = [
     `Subject: ${email.subject}`,
     `From:    ${email.from}`,
     `Date:    ${email.date}`,
-    `Has attachment: ${email.hasAttachment ? 'yes' : 'no'}`,
-  ].join('\n');
+  ];
+  if (attachmentList) lines.push(`Attachments: ${attachmentList}`);
+  if (body)           lines.push(`\nBody:\n${body}`);
+  if (!full)          lines.push('(body unavailable — header only)');
+
+  const content = lines.join('\n');
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
