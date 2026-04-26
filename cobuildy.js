@@ -1,4 +1,5 @@
 const { createProjectStructure, uploadFile, listFolder } = require('./scripts/drive/drive.js');
+const { listEmails, readEmail, searchEmails } = require('./scripts/email/email.js');
 
 const [,, mod, command, ...args] = process.argv;
 
@@ -24,6 +25,47 @@ const router = {
         process.exit(1);
       }
       await uploadFile(filePath, folderId);
+    },
+  },
+  email: {
+    listEmails: async ([folder, limit]) => {
+      const emails = await listEmails(folder, limit ? parseInt(limit) : 10);
+      if (!emails.length) { console.log('No emails found.'); return; }
+      emails.forEach(e => {
+        console.log(`[${e.uid}] ${e.date}`);
+        console.log(`  From: ${e.from}`);
+        console.log(`  Subj: ${e.subject}${e.hasAttachment ? '  [attachment]' : ''}`);
+      });
+    },
+    readEmail: async ([uid, folder]) => {
+      if (!uid) {
+        console.error('Usage: node cobuildy.js email readEmail <uid> [folder]');
+        process.exit(1);
+      }
+      const email = await readEmail(folder, uid);
+      console.log(`Subject: ${email.subject}`);
+      console.log(`From:    ${email.from}`);
+      console.log(`Date:    ${email.date}`);
+      if (email.attachments.length) {
+        console.log('\nAttachments:');
+        email.attachments.forEach(a =>
+          console.log(`  - ${a.filename} (${a.contentType}, ${a.size} bytes)`)
+        );
+      }
+      console.log(`\n${email.body}`);
+    },
+    searchEmails: async ([query]) => {
+      if (!query) {
+        console.error('Usage: node cobuildy.js email searchEmails <query>');
+        process.exit(1);
+      }
+      const emails = await searchEmails(query);
+      if (!emails.length) { console.log('No emails found.'); return; }
+      emails.forEach(e => {
+        console.log(`[${e.uid}] ${e.date}`);
+        console.log(`  From: ${e.from}`);
+        console.log(`  Subj: ${e.subject}${e.hasAttachment ? '  [attachment]' : ''}`);
+      });
     },
   },
 };
