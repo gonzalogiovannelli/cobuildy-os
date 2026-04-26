@@ -5,7 +5,8 @@
       "Bash(mv /c/Users/Gonza/cobuildy-os/drive.js /c/Users/Gonza/cobuildy-os/scripts/drive/drive.js)",
       "Bash(mv /c/Users/Gonza/cobuildy-os/credentials.json /c/Users/Gonza/cobuildy-os/scripts/drive/credentials.json)",
       "Bash(mv /c/Users/Gonza/cobuildy-os/token.json /c/Users/Gonza/cobuildy-os/scripts/drive/token.json)",
-      "Bash(mv /c/Users/Gonza/cobuildy-os/package.json /c/Users/Gonza/cobuildy-os/scripts/package.json)"
+      "Bash(mv /c/Users/Gonza/cobuildy-os/package.json /c/Users/Gonza/cobuildy-os/scripts/package.json)",
+      "Skill(claude-api)"
     ]
   }
 }
