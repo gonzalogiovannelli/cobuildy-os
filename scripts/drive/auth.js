@@ -1,10 +1,11 @@
 const { google } = require('googleapis');
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
-const TOKEN_PATH = 'token.json';
-const CREDENTIALS_PATH = 'credentials.json';
+const TOKEN_PATH = path.join(__dirname, 'token.json');
+const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
 
 async function authenticate() {
   const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));

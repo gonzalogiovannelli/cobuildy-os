@@ -3,10 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 async function getDrive() {
-  const credentials = JSON.parse(fs.readFileSync('credentials.json'));
+  const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')));
   const { client_secret, client_id, redirect_uris } = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-  oAuth2Client.setCredentials(JSON.parse(fs.readFileSync('token.json')));
+  oAuth2Client.setCredentials(JSON.parse(fs.readFileSync(path.join(__dirname, 'token.json'))));
   return google.drive({ version: 'v3', auth: oAuth2Client });
 }
 

@@ -1,4 +1,4 @@
-credentials.json
-token.json
+**/credentials.json
+**/token.json
 .env
 node_modules/
