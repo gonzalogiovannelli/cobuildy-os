@@ -13,7 +13,12 @@
       "WebFetch(domain:docs.granola.ai)",
       "mcp__granola__list_meetings",
       "mcp__granola__get_meetings",
-      "mcp__granola__get_meeting_transcript"
+      "mcp__granola__get_meeting_transcript",
+      "Bash(node *)",
+      "Bash(xxd \"C:/Users/Gonza/cobuildy-os/tmp/2023-CuentasAnuales-RRMM.pdf\")",
+      "Bash(xxd \"C:/Users/Gonza/cobuildy-os/tmp/CertificadoPtmosPromotor.pdf\")",
+      "Bash(cp CertificadoPtmosPromotor.pdf CertificadoPtmosPromotor.zip)",
+      "Bash(unzip -o CertificadoPtmosPromotor.zip -d cert_extracted/)"
     ]
   },
   "enabledMcpjsonServers": [
