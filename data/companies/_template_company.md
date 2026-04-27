@@ -5,15 +5,16 @@
 - **Commercial name:** 
 - **NIF/CIF:** 
 - **Address:** 
+- **Country:** ES / PT
 - **Website:** 
 
 ## Ownership
 - **Legal owners:** 
 - **Ownership %:** 
 
-## Contacts
-- **Main contact:** [person.md link]
-- **Other contacts:** 
+## Associated People
+- [firstname_lastname.md] → role (main contact / CFO / legal owner / advisor)
+- [firstname_lastname.md] → role
 
 ## Company Type
 - **Type:** promoter / investor / SPV
@@ -25,5 +26,4 @@
 - **Other:** 
 
 ## Links
-- **People:** /data/people/firstname_lastname.md
 - **Projects:** /data/projects/ES-00X
