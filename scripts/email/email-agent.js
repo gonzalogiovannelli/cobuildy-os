@@ -137,36 +137,92 @@ function slugify(s) {
     .replace(/^_+|_+$/g, '');
 }
 
-function fillPersonMd(analysis, companySlug) {
+// Replace the value after "- **Field:**" on a markdown bullet line.
+// Empty/null/undefined values clear the line (no enum/placeholder leaks through).
+function setField(text, field, value) {
+  const safe = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re   = new RegExp(`(- \\*\\*${safe}:\\*\\*)[^\\n]*`, 'g');
+  return text.replace(re, `$1 ${value ?? ''}`.replace(/ $/, ' '));
+}
+
+function setFields(text, fields) {
+  for (const [k, v] of Object.entries(fields)) text = setField(text, k, v);
+  return text;
+}
+
+function fillPersonMd(analysis, companySlug, projectCode, emailSubject) {
   const name  = analysis.sender?.name  || 'Unknown';
   const email = analysis.sender?.email || '';
   const date  = today();
 
-  return fs.readFileSync(path.join(PEOPLE_DIR, '_template_person.md'), 'utf8')
-    .replace('# [Full Name]',                                  `# ${name}`)
-    .replace(/- \*\*Email:\*\*\s*\n/,                          `- **Email:** ${email}\n`)
-    .replace('- **Type:** promoter / investor / advisor',      '- **Type:** promoter')
-    .replace('- **Company:** [company_name.md]',
-             companySlug ? `- **Company:** [${companySlug}.md](/data/companies/${companySlug}.md)` : '- **Company:** ')
-    .replace('- **Channel:** LinkedIn / ads-es / ads-pt / ads-eng / referral / direct',
-             '- **Channel:** email')
-    .replace('- **First contact date:** YYYY-MM-DD',           `- **First contact date:** ${date}`)
-    .replace(/- \*\*Current stage:\*\* new \/ messaged[^\n]*/, '- **Current stage:** analysis')
-    .replace('- **Last updated:** YYYY-MM-DD',                 `- **Last updated:** ${date}`)
-    .replace('- **Company:** /data/companies/company_name.md',
-             companySlug ? `- **Company:** /data/companies/${companySlug}.md` : '- **Company:** ');
+  let text = fs.readFileSync(path.join(PEOPLE_DIR, '_template_person.md'), 'utf8').replace(/\r\n/g, '\n');
+
+  // Title
+  text = text.replace('# [Full Name]', `# ${name}`);
+
+  // Generic fields — every field listed clears placeholders and fills if value present
+  text = setFields(text, {
+    'Email':              email,
+    'Type':               'promoter',
+    'Investor ID':        '',
+    'Channel':            'email',
+    'Language':           '',
+    'First contact date': date,
+    'Current stage':      'analysis',
+    'Last updated':       date,
+    'Active projects':    projectCode || '',
+    'Last interaction':   emailSubject ? `${date} | Email | ${emailSubject}` : '',
+    'Projects':           projectCode ? `/data/projects/${projectCode}` : '',
+  });
+
+  // Company appears in two sections with different formats — handle each explicitly.
+  text = text.replace(
+    /- \*\*Company:\*\* \[company_name\.md\]/,
+    companySlug ? `- **Company:** [${companySlug}.md](/data/companies/${companySlug}.md)` : '- **Company:** '
+  );
+  text = text.replace(
+    /- \*\*Company:\*\* \/data\/companies\/company_name\.md/,
+    companySlug ? `- **Company:** /data/companies/${companySlug}.md` : '- **Company:** '
+  );
+
+  return text;
 }
 
-function fillCompanyMd(analysis, personSlug) {
+function fillCompanyMd(analysis, personSlug, projectCode) {
   const companyName = analysis.sender?.company || 'Unknown';
   const personName  = analysis.sender?.name    || 'Unknown';
 
-  return fs.readFileSync(path.join(COMPANIES_DIR, '_template_company.md'), 'utf8')
-    .replace('# [Company Legal Name]',  `# ${companyName}`)
-    .replace(/- \*\*Legal name:\*\*\s*\n/, `- **Legal name:** ${companyName}\n`)
-    .replace('- [firstname_lastname.md] → role (main contact / CFO / legal owner / advisor)',
-             `- [${personSlug}.md](/data/people/${personSlug}.md) → ${personName} (main contact)`)
-    .replace('\n- [firstname_lastname.md] → role', '');
+  let text = fs.readFileSync(path.join(COMPANIES_DIR, '_template_company.md'), 'utf8').replace(/\r\n/g, '\n');
+
+  // Title
+  text = text.replace('# [Company Legal Name]', `# ${companyName}`);
+
+  // Generic fields
+  text = setFields(text, {
+    'Legal name':      companyName,
+    'Commercial name': '',
+    'NIF/CIF':         '',
+    'Address':         '',
+    'Country':         '',
+    'Website':         '',
+    'Legal owners':    '',
+    'Ownership %':     '',
+    'Type':            '',
+    'Parent company':  '',
+    'Statutes':        '',
+    'ID documents':    '',
+    'Other':           '',
+    'Projects':        projectCode ? `/data/projects/${projectCode}` : '',
+  });
+
+  // Associated People — replace example lines with one filled entry.
+  text = text.replace(
+    '- [firstname_lastname.md] → role (main contact / CFO / legal owner / advisor)',
+    personSlug ? `- [${personSlug}.md](/data/people/${personSlug}.md) → ${personName} (main contact)` : ''
+  );
+  text = text.replace(/\n- \[firstname_lastname\.md\] → role(?=\n)/, '');
+
+  return text;
 }
 
 function fillProjectMd(code, analysis, personSlug, companySlug) {
@@ -176,22 +232,48 @@ function fillProjectMd(code, analysis, personSlug, companySlug) {
   const senderName = analysis.sender?.name          || '';
   const date       = today();
 
-  return fs.readFileSync(path.join(PROJECTS_DIR, '_template_project.md'), 'utf8')
-    .replace('[Project Code]', code)
-    .replace('[Location]',     location || 'TBD')
-    .replace('**Code:** ES-00X',                            `**Code:** ${code}`)
-    .replace('prospecting / active / on hold / closed',     'prospecting')
-    .replace('**Location:** \n',                            `**Location:** ${location}\n`)
-    .replace('residential / commercial / mixed',            type || 'residential / commercial / mixed')
-    .replace('**Ticket (€):** \n',                         `**Ticket (€):** ${ticket}\n`)
-    .replace('**Created:** YYYY-MM-DD',                     `**Created:** ${date}`)
-    .replace('**First document received:** \n',             `**First document received:** ${date}\n`)
-    .replace('**Created by:** \n',                          `**Created by:** Email Agent\n`)
-    .replace('- **Promoter:** /data/people/firstname_lastname.md',
-             personSlug ? `- **Promoter:** /data/people/${personSlug}.md` : '- **Promoter:** ')
-    .replace('- **Company:** /data/companies/company_name.md',
-             companySlug ? `- **Company:** /data/companies/${companySlug}.md` : '- **Company:** ')
-    .replace('_(brief description of where we are today)_', `Lead received via email from ${senderName}. Pending review.`);
+  let text = fs.readFileSync(path.join(PROJECTS_DIR, '_template_project.md'), 'utf8').replace(/\r\n/g, '\n');
+
+  // Title
+  text = text.replace(
+    '# [Project Code] - [Location]',
+    location ? `# ${code} - ${location}` : `# ${code}`
+  );
+
+  // Generic fields
+  text = setFields(text, {
+    'Code':                       code,
+    'Stage':                      'analysis',
+    'Location':                   location,
+    'Type':                       type,
+    'Total area (m²)':            '',
+    'Ticket (€)':                 ticket,
+    'Financing instrument':       '',
+    'Timeline':                   '',
+    'Skin in the game (min 10%)': '',
+    'Land secured':               '',
+    'Ticket above €500K':         '',
+    'Commercial entity':          '',
+    'Legal entity':               '',
+    'Special purpose vehicle':    '',
+    'SPV legal name':             '',
+    'Promoter':                   personSlug ? `/data/people/${personSlug}.md` : '',
+    'Company':                    companySlug ? `/data/companies/${companySlug}.md` : '',
+    'Drive folder ID':            '',
+    'Drive folder link':          '',
+    'Google Sheet':               '',
+    'Created':                    date,
+    'First document received':    date,
+    'Created by':                 'Email Agent',
+  });
+
+  // Status Summary
+  text = text.replace(
+    '_(brief description of where we are today)_',
+    `Lead received via email from ${senderName}. Pending review.`
+  );
+
+  return text;
 }
 
 function fillLogMd(code, subject) {
@@ -217,7 +299,7 @@ async function createLocalProject(code, analysis, emailSubject) {
     if (fs.existsSync(personPath)) {
       console.log(`  i data/people/${personSlug}.md already exists — leaving as is`);
     } else {
-      fs.writeFileSync(personPath, fillPersonMd(analysis, companySlug));
+      fs.writeFileSync(personPath, fillPersonMd(analysis, companySlug, code, emailSubject));
       console.log(`  ✓ Created data/people/${personSlug}.md`);
     }
   }
@@ -228,7 +310,7 @@ async function createLocalProject(code, analysis, emailSubject) {
     if (fs.existsSync(companyPath)) {
       console.log(`  i data/companies/${companySlug}.md already exists — leaving as is`);
     } else {
-      fs.writeFileSync(companyPath, fillCompanyMd(analysis, personSlug));
+      fs.writeFileSync(companyPath, fillCompanyMd(analysis, personSlug, code));
       console.log(`  ✓ Created data/companies/${companySlug}.md`);
     }
   }
