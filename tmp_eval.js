@@ -144,7 +144,7 @@ function fillPersonMd(analysis, companySlug) {
 
   return fs.readFileSync(path.join(PEOPLE_DIR, '_template_person.md'), 'utf8')
     .replace('# [Full Name]',                                  `# ${name}`)
-    .replace(/- \*\*Email:\*\*\s*\n/,                          `- **Email:** ${email}\n`)
+    .replace('- **Email:** \n',                                `- **Email:** ${email}\n`)
     .replace('- **Type:** promoter / investor / advisor',      '- **Type:** promoter')
     .replace('- **Company:** [company_name.md]',
              companySlug ? `- **Company:** [${companySlug}.md](/data/companies/${companySlug}.md)` : '- **Company:** ')
@@ -163,7 +163,7 @@ function fillCompanyMd(analysis, personSlug) {
 
   return fs.readFileSync(path.join(COMPANIES_DIR, '_template_company.md'), 'utf8')
     .replace('# [Company Legal Name]',  `# ${companyName}`)
-    .replace(/- \*\*Legal name:\*\*\s*\n/, `- **Legal name:** ${companyName}\n`)
+    .replace('- **Legal name:** \n',    `- **Legal name:** ${companyName}\n`)
     .replace('- [firstname_lastname.md] → role (main contact / CFO / legal owner / advisor)',
              `- [${personSlug}.md](/data/people/${personSlug}.md) → ${personName} (main contact)`)
     .replace('\n- [firstname_lastname.md] → role', '');
@@ -343,7 +343,7 @@ async function main() {
   rl.close();
 }
 
-main().catch(err => {
+module.exports = { slugify, fillPersonMd, fillCompanyMd, fillProjectMd, fillLogMd }; (() => {}); main; (function noop(){}).catch(err => {
   console.error(err.message);
   rl.close();
   process.exit(1);
