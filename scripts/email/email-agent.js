@@ -9,6 +9,7 @@ const Anthropic = _sdk.default ?? _sdk;
 
 const { listEmails, readEmail } = require('./email.js');
 const { createProjectStructure } = require('../drive/drive.js');
+const { findPersonMatches, findCompanyMatches } = require('../entity/match.js');
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -113,13 +114,27 @@ async function analyzeEmail(email) {
 
 // ── Project code ──────────────────────────────────────────────────────────────
 
-function nextProjectCode() {
+// Reserves the next available project code by atomically creating its
+// directory. mkdir without `recursive` throws EEXIST if the dir is already
+// taken — we catch and try the next number. This prevents two flows from
+// claiming the same code, and also forces anyone using a code outside the
+// agent (e.g. ad-hoc Drive renames) to reserve it first by creating the dir.
+function reserveProjectCode() {
   const entries = fs.readdirSync(PROJECTS_DIR);
   const nums = entries
     .filter(e => /^(ES|PT)-\d{3}$/.test(e))
     .map(e => parseInt(e.split('-')[1], 10));
-  const next = nums.length ? Math.max(...nums) + 1 : 1;
-  return `ES-${String(next).padStart(3, '0')}`;
+  let next = nums.length ? Math.max(...nums) + 1 : 1;
+  while (true) {
+    const code = `ES-${String(next).padStart(3, '0')}`;
+    try {
+      fs.mkdirSync(path.join(PROJECTS_DIR, code));
+      return code;
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+      next++;
+    }
+  }
 }
 
 // ── Local project scaffolding ─────────────────────────────────────────────────
@@ -288,37 +303,75 @@ function fillFeedbackMd(code) {
     .replace('[Project Code]', code);
 }
 
-async function createLocalProject(code, analysis, emailSubject) {
-  const personSlug  = slugify(analysis.sender?.name);
-  const companyName = analysis.sender?.company || null;
-  const companySlug = companyName ? slugify(companyName) : null;
+// Apply BRD entity-matching policy (section 5.2): ≥90% auto-link, 25–89% ask,
+// <25% create new. Returns { slug, existing } where existing is non-null when
+// we're reusing an existing person record.
+async function resolvePerson(analysis) {
+  const candidate = {
+    name:    analysis.sender?.name,
+    email:   analysis.sender?.email,
+    phone:   null,
+    company: analysis.sender?.company,
+  };
+  const matches = findPersonMatches(candidate);
+  const top = matches[0];
 
-  // Person file
-  if (personSlug) {
-    const personPath = path.join(PEOPLE_DIR, `${personSlug}.md`);
-    if (fs.existsSync(personPath)) {
-      console.log(`  i data/people/${personSlug}.md already exists — leaving as is`);
-    } else {
-      fs.writeFileSync(personPath, fillPersonMd(analysis, companySlug, code, emailSubject));
-      console.log(`  ✓ Created data/people/${personSlug}.md`);
-    }
+  if (top && top.confidence >= 90) {
+    console.log(`  i Matched existing person: ${top.slug} (${top.confidence}% — ${top.reason})`);
+    return { slug: top.slug, existing: top };
+  }
+  if (top && top.confidence >= 25) {
+    console.log(`  ? Possible match: ${top.slug} (${top.confidence}% — ${top.reason})`);
+    console.log(`      Existing: ${top.person.name} <${top.person.email || '—'}>`);
+    console.log(`      Incoming: ${candidate.name} <${candidate.email || '—'}>`);
+    const ans = await ask('  Use existing? (yes / no — create new): ');
+    if (ans === 'yes' || ans === 'y') return { slug: top.slug, existing: top };
+  }
+  return { slug: slugify(candidate.name), existing: null };
+}
+
+async function resolveCompany(analysis) {
+  const name = analysis.sender?.company;
+  if (!name) return { slug: null, existing: null };
+  const matches = findCompanyMatches({ name });
+  const top = matches[0];
+
+  if (top && top.confidence >= 90) {
+    console.log(`  i Matched existing company: ${top.slug} (${top.confidence}% — ${top.reason})`);
+    return { slug: top.slug, existing: top };
+  }
+  if (top && top.confidence >= 25) {
+    console.log(`  ? Possible company match: ${top.slug} (${top.confidence}% — ${top.reason})`);
+    console.log(`      Existing: ${top.company.name}`);
+    console.log(`      Incoming: ${name}`);
+    const ans = await ask('  Use existing? (yes / no — create new): ');
+    if (ans === 'yes' || ans === 'y') return { slug: top.slug, existing: top };
+  }
+  return { slug: slugify(name), existing: null };
+}
+
+async function createLocalProject(code, analysis, emailSubject, personSlug, personExists, companySlug, companyExists) {
+  // Person file — only write if we're creating a new one. Existing matches
+  // are reused as-is (we don't overwrite their data).
+  if (personSlug && !personExists) {
+    fs.writeFileSync(
+      path.join(PEOPLE_DIR, `${personSlug}.md`),
+      fillPersonMd(analysis, companySlug, code, emailSubject),
+    );
+    console.log(`  ✓ Created data/people/${personSlug}.md`);
   }
 
-  // Company file (only if company detected)
-  if (companySlug) {
-    const companyPath = path.join(COMPANIES_DIR, `${companySlug}.md`);
-    if (fs.existsSync(companyPath)) {
-      console.log(`  i data/companies/${companySlug}.md already exists — leaving as is`);
-    } else {
-      fs.writeFileSync(companyPath, fillCompanyMd(analysis, personSlug, code));
-      console.log(`  ✓ Created data/companies/${companySlug}.md`);
-    }
+  // Company file — same logic.
+  if (companySlug && !companyExists) {
+    fs.writeFileSync(
+      path.join(COMPANIES_DIR, `${companySlug}.md`),
+      fillCompanyMd(analysis, personSlug, code),
+    );
+    console.log(`  ✓ Created data/companies/${companySlug}.md`);
   }
 
-  // Project files
+  // Project files (directory was already reserved via reserveProjectCode)
   const projectDir = path.join(PROJECTS_DIR, code);
-  fs.mkdirSync(projectDir);
-
   fs.writeFileSync(path.join(projectDir, 'project.md'),  fillProjectMd(code, analysis, personSlug, companySlug));
   fs.writeFileSync(path.join(projectDir, 'log.md'),      fillLogMd(code, emailSubject));
   fs.writeFileSync(path.join(projectDir, 'feedback.md'), fillFeedbackMd(code));
@@ -395,7 +448,13 @@ async function main() {
     }
 
     if (verdict === 'viable') {
-      const code     = nextProjectCode();
+      // Resolve entities BEFORE reserving the project code, so that any
+      // user-prompts for ambiguous matches happen up-front and we don't
+      // leave an orphan reserved directory if the user bails.
+      const { slug: personSlug,  existing: personExisting  } = await resolvePerson(result);
+      const { slug: companySlug, existing: companyExisting } = await resolveCompany(result);
+
+      const code     = reserveProjectCode();
       const location = result.projectInfo?.location || 'Unknown';
       const promoter = result.sender?.name          || 'Unknown';
 
@@ -403,7 +462,7 @@ async function main() {
 
       // Local project folder
       try {
-        await createLocalProject(code, result, email.subject);
+        await createLocalProject(code, result, email.subject, personSlug, personExisting, companySlug, companyExisting);
       } catch (err) {
         console.error(`  ✗ Local folder error: ${err.message}`);
       }
