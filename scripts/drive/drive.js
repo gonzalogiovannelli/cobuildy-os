@@ -22,12 +22,13 @@ async function createFolder(name, parentId = null) {
   return res.data.id;
 }
 
+// Top-level folder holds the success-fee contract and the financial-model
+// sheet (loaded manually by Gonzalo). The "Promoter Files" subfolder is the
+// shared folder the promoter uploads everything else into.
 async function createProjectStructure(projectCode, city, promoter, parentId = null) {
   console.log(`\nCreating project structure for ${projectCode}...`);
   const projectFolder = await createFolder(`${projectCode} - ${city} - ${promoter}`, parentId);
-  await createFolder('Documents', projectFolder);
-await createFolder('Legal', projectFolder);
-  await createFolder('Financial', projectFolder);
+  await createFolder('Promoter Files', projectFolder);
   console.log(`\nProject ${projectCode} structure ready.`);
   return projectFolder;
 }

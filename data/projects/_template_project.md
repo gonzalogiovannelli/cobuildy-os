@@ -4,7 +4,7 @@
 - **Code:** ES-00X
 - **Stage:** prospecting / analysis / contract-signed / structuring / ready-to-invest / due-diligence / closed-won / discarded
 - **Location:** 
-- **Type:** residential / commercial / mixed
+- **Asset type:** residential / commercial / hospitality / mixed
 - **Total area (m²):** 
 - **Ticket (€):** 
 - **Financing instrument:** equity / debt / mezzanine
@@ -27,11 +27,6 @@
 - **Drive folder ID:** 
 - **Drive folder link:** 
 - **Google Sheet:** 
-
-## Investors Presented
-| Investor ID | Date | Feedback | Decision |
-|-------------|------|----------|----------|
-|             |      |          |          |
 
 ## Opening
 - **Created:** YYYY-MM-DD

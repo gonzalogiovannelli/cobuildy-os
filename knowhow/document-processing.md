@@ -18,21 +18,23 @@ From every document, try to extract:
 - Key figures (ticket, surface area, NIF, etc.)
 
 ## Naming Convention
-Format: [PROJECT_CODE]-[document_type]-[descriptor]-[YYYY-MM-DD].[ext]
+Format: [PROJECT_CODE]-[document_type]-[descriptor].[ext]
 
 Examples:
-- ES-001-estatuto-inversiones_poliandrus-2025-04-27.pdf
-- ES-001-planos-malaga-fase1-2025-04-27.pdf
-- ES-001-tasacion-suelo-guadarrama-2025-04-27.pdf
-- ES-001-business_plan-2025-04-27.xlsx
-- ES-001-contrato-success_fee-2025-04-27.pdf
+- ES-001-estatuto-polandrius.pdf
+- ES-001-planos-fase1.pdf
+- ES-001-tasacion-suelo-guadarrama.pdf
+- ES-001-business_plan.xlsx
+- ES-001-contrato-success_fee.pdf
 
 Rules:
 - Always lowercase
 - Spaces replaced with underscores
-- Date is document date if found, otherwise today's date
+- No date in filename (Drive tracks `createdTime` / `modifiedTime` already)
 - If project code unknown at time of upload, use PENDING as code
   and rename when project is assigned
+- Versioning, when needed, goes as a `-vN` suffix
+  (e.g. `ES-001-business_plan-v2.xlsx`)
 
 ## Document Types (standard names)
 - estatuto → company statutes

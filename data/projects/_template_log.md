@@ -7,6 +7,6 @@ Each entry follows this structure:
 ## Entries
 
 ---
-YYYY-MM-DD | [LinkedIn / WhatsApp / Email / Call / Meet] | [Brief description of what happened] | [What needs to happen next]
+YYYY-MM-DD | [Email / LinkedIn / Kommo / Call / Meet] | [Brief description of what happened] | [What needs to happen next]
 
 ---

@@ -46,17 +46,20 @@ who called, call direction, and contact type.
 - Check for project creation criteria:
   1. Location mentioned?
   2. Ticket amount mentioned?
-  3. Project type mentioned?
+  3. Asset type mentioned?
 - If all 3 met → present verdict prompt to Gonzalo:
   "Call with [Name] — [duration]
   Summary: [3-5 lines]
-  Project info: Location [x], Ticket [x], Type [x]
+  Project info: Location [x], Ticket [x], Asset type [x]
   What is your verdict? (viable / discarded / pending)"
+- If any criterion is missing → log the call on the person (or on the
+  existing project if there is one) and DO NOT prompt for verdict.
 
 ### Investor call (Dona or inbound)
 - Extract investor preferences if mentioned:
   ticket range, instrument, geography, risk profile
-- Update investor profile in /data/people or /data/investors
+- Update investor fields in /data/people/<slug>.md (investor is a person
+  with `Investor ID: INV-XXX` set — not a separate file)
 - Log interaction in relevant project feedback.md if a project was discussed
 
 ## Step 4 — Process verdict (promoter calls only)

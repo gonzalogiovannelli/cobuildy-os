@@ -9,17 +9,17 @@
 - **Kommo Contact ID:** 
 
 ## Role
-- **Type:** promoter / investor / advisor
+- **Role:** promoter / investor
 - **Investor ID:** INV-00X (if applicable)
 - **Company:** [company_name.md]
 
 ## Source
-- **Channel:** LinkedIn / ads-es / ads-pt / ads-eng / referral / direct
+- **Channel:** email / linkedin / kommo / referral / direct
 - **Language:** es / en / pt
 - **First contact date:** YYYY-MM-DD
 
 ## Status
-- **Current stage:** new / messaged / follow-up / call-meeting / uploading-docs / pending-review / in-review / ready-to-invest / closed-won / closed-lost / not-qualified / future-reconnect
+- **Current stage:** prospecting / active / dormant / discarded
 - **Last updated:** YYYY-MM-DD
 
 ## Communication Preferences
@@ -30,9 +30,16 @@
 
 ## Activity Summary
 - **Active projects:** 
-- **Last interaction:** YYYY-MM-DD | [channel] | [summary]
+- **Last email:** 
+- **Last call:** 
+- **Last meet:** 
+- **Last LinkedIn:** 
+- **Last Kommo:** 
 - **Next action:** 
 
 ## Links
 - **Company:** /data/companies/company_name.md
 - **Projects:** /data/projects/ES-00X
+
+## Interactions Log
+_(newest first — appended automatically by agents)_

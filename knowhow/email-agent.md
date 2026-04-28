@@ -5,7 +5,9 @@ Automatically process incoming emails to Gonzalo's Cobuildy account,
 identify the sender, and take the appropriate action in the system.
 
 ## Trigger
-A new email arrives at gonzalog@cobuildy.com
+A new email arrives at gonzalog@cobuildy.com (operational mailbox).
+The agent is invoked manually for now (`node scripts/email/email-agent.js`)
+and pulls unread INBOX messages.
 
 ## Step 1 — Identify the sender
 - Extract: name, email address, phone (if present), company name (if present)
@@ -49,9 +51,10 @@ A new email arrives at gonzalog@cobuildy.com
 - Save Drive folder link in project.md
 
 ## Step 5 — Confirm and log
-- Add entry to /data/projects/[CODE]/log.md
+- If a project exists for the sender → add entry to /data/projects/[CODE]/log.md
+- If no project (orphan person) → add entry to person.md `Interactions Log`
+- Update `Last email:` field on person.md regardless
 - Format: YYYY-MM-DD | Email | [summary] | [next action]
-- If new entity was created, note it in the log
 
 ## Outbound Emails — Rules
 

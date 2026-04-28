@@ -12,19 +12,21 @@ Sources: email agent, Kommo agent, Aircall agent, Granola agent, LinkedIn sheet,
 |-------|--------|-----|
 | Full name | Kommo / email / LinkedIn sheet | Extracted automatically from contact name |
 | Email | Kommo / email header | Extracted automatically |
-| Phone | Kommo / WhatsApp | Extracted automatically |
+| Phone | Kommo | Extracted automatically |
 | WhatsApp | Kommo | Extracted automatically |
-| LinkedIn | LinkedIn sheet | Read from column G |
+| LinkedIn | LinkedIn sheet | URL from sheet |
 | Kommo Lead ID | Kommo import | Extracted automatically |
 | Kommo Contact ID | Kommo import | Extracted automatically |
-| Type (role) | Manual | Gonzalo confirms after first interaction |
+| Role | Agent suggestion / manual | Agent suggests `promoter` or `investor`, Gonzalo confirms |
+| Investor ID | Manual | Assigned (INV-NNN) when contact confirms investment interest |
 | Company | Email / Kommo / manual | Agent suggests, Gonzalo confirms |
-| Source channel | Kommo tags / LinkedIn sheet | Extracted from tags (meta, es, pt) or sheet |
-| Language | Kommo tags / email | Extracted from tags (es, eng, pt) |
-| First contact date | Kommo created_at / email date | Extracted automatically |
-| Current stage | Kommo status / manual | Synced from Kommo or updated manually |
+| Channel | Email header / Kommo / LinkedIn sheet | First-contact channel: email / linkedin / kommo / referral / direct |
+| Language | Kommo tags / email | es / en / pt |
+| First contact date | Channel-specific (email Date header, Kommo created_at, etc.) | Extracted automatically per channel |
+| Current stage | Manual / inferred | prospecting / active / dormant / discarded — independent from project Stage |
 | Communication preferences | Granola / Aircall / manual | Agent extracts from call notes |
-| Activity summary | Auto-generated | System generates from log entries |
+| Active projects | System | List of project codes when person becomes a promoter on one or more projects |
+| Last email / call / meet / LinkedIn / Kommo | Per-channel agents | Each agent updates only its own channel's date |
 | Next action | Manual / agent suggestion | Agent suggests after each interaction |
 
 ---
@@ -42,7 +44,6 @@ Sources: email agent, Kommo agent, Aircall agent, Granola agent, LinkedIn sheet,
 | Legal owners | Documents / manual | Extracted from estatuto or acta titular real |
 | Ownership % | Documents / manual | Extracted from estatuto |
 | Associated people | Manual / agent | Agent links when person mentions company |
-| Parent company | Manual | Gonzalo confirms when promoter mentions SPV |
 
 ---
 
@@ -51,9 +52,9 @@ Sources: email agent, Kommo agent, Aircall agent, Granola agent, LinkedIn sheet,
 | Field | Source | How |
 |-------|--------|-----|
 | Code | System | Auto-assigned (ES-001, PT-001) on project creation |
-| Stage | Manual / Kommo | Updated by Gonzalo after each milestone |
+| Stage | Manual / agent | prospecting → analysis → contract-signed → structuring → ready-to-invest → due-diligence → closed-won / discarded |
 | Location | Email / Aircall / Granola | Extracted from first contact or call notes |
-| Type | Email / Aircall / Granola / documents | Extracted automatically |
+| Asset type | Email / Aircall / Granola / documents | residential / commercial / hospitality / mixed |
 | Total area (m²) | Documents / Aircall / Granola | Extracted from business plan or call notes |
 | Ticket (€) | Email / Aircall / Granola / Kommo | Extracted automatically |
 | Financing instrument | Email / Aircall / Granola | Extracted automatically |
@@ -63,8 +64,9 @@ Sources: email agent, Kommo agent, Aircall agent, Granola agent, LinkedIn sheet,
 | Commercial entity | Manual / documents | Gonzalo fills after first interaction |
 | Legal entity | Documents / manual | Extracted from contract or estatuto |
 | SPV | Documents / manual | Detected when new company appears in documents |
-| Drive folder ID | System | Auto-created on project creation |
-| Investors presented | Manual / Dona | Updated when ficha is sent to investor |
+| Drive folder ID / link | System | Auto-created on project creation |
+| Google Sheet | Manual | Gonzalo links the financial-model sheet here |
+| Created / First document received / Created by | System | Auto-filled by the agent that created the project |
 | Status summary | Manual / agent | Agent drafts, Gonzalo reviews |
 
 ---

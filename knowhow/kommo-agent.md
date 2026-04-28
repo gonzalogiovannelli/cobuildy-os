@@ -31,14 +31,18 @@ Kommo notes written by the team are a key source of project information.
 - Add Kommo ID to person.md identities
 
 ### Step 3 — Log the interaction
-- Add entry to person.md activity summary
-- Format: YYYY-MM-DD | WhatsApp (Kommo) | [summary] | [next action]
+- If person has an active project → log to that project's `log.md`
+- If no project (orphan) → log to person.md `Interactions Log` section
+- Update `Last Kommo:` field on person.md
+- Format: YYYY-MM-DD | Kommo | [summary] | [next action]
 
 ## Pipeline Stage Change Workflow
 
 ### When a lead changes stage manually
-- Log the stage change in person.md
+- Log the stage change to project log.md (if project exists) or person.md
 - Format: YYYY-MM-DD | Kommo | Stage changed to [stage] | [next action]
+- Note: Kommo pipeline stages are not synced to person.md `Current stage`
+  (we use our own enum: prospecting / active / dormant / discarded)
 
 ## Notes and Call Summaries Workflow
 
@@ -47,15 +51,17 @@ Kommo notes written by the team are a key source of project information.
 - Check if it contains project information:
   - Location mentioned? → yes/no
   - Ticket amount mentioned? → yes/no
-  - Project type mentioned? → yes/no
-- If all 3 criteria are met → flag for project creation review
+  - Asset type mentioned? → yes/no
+- If all 3 criteria are met → flag for project creation review.
+- If any criterion is missing → log on person.md / existing project log
+  and wait for next touchpoint (no verdict prompt).
 
 ## Project Creation Trigger
 
 ### Minimum criteria to create a project
 1. Location (city or region)
 2. Approximate ticket (€)
-3. Project type (renovation, new build, etc.)
+3. Asset type (residential / commercial / hospitality / mixed)
 
 ### If criteria are met (from note, call transcript, or conversation)
 - Extract project info from the source
@@ -63,7 +69,7 @@ Kommo notes written by the team are a key source of project information.
   "New project detected for [Name]. Here is the summary:
   - Location: [x]
   - Ticket: [x]
-  - Type: [x]
+  - Asset type: [x]
   What is your verdict? (viable / discarded / pending)"
 
 ### Verdicts

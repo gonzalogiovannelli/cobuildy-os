@@ -17,9 +17,15 @@ No project should advance to the next stage without meeting the requirements.
 - Project creation criteria being evaluated:
   1. Location confirmed
   2. Ticket confirmed
-  3. Project type confirmed
-- When all 3 confirmed → assign project code, create /data/projects/[CODE]/
-- Verdict required from Gonzalo: viable / discarded / pending
+  3. Asset type confirmed
+- The agent prompts Gonzalo for a verdict ONLY when all 3 criteria are
+  confirmed in the source (email body, call transcript, Kommo note, etc.).
+  If a criterion is missing, the agent logs the interaction on the
+  person and waits for the next touchpoint.
+- Verdict options: `viable` / `discarded` / `pending`
+- A project is reserved (code assigned + /data/projects/[CODE]/ created)
+  ONLY on `viable`. `discarded` and `pending` keep the lead alive on
+  person.md but create no project.
 
 ### 3. Contract Signed ⚠️ Critical milestone
 - Success fee contract sent to promoter (from template)
@@ -74,6 +80,6 @@ No project should advance to the next stage without meeting the requirements.
 - **Due diligence → Closed/Discarded:** deal signed or rejected
 
 ## Notes
-- project.md status field must always reflect current stage
+- project.md `Stage` field must always reflect current stage
 - No project advances without meeting stage requirements
 - Contract stage is a hard blocker — no exceptions

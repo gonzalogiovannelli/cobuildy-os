@@ -16,10 +16,6 @@
 - [firstname_lastname.md] → role (main contact / CFO / legal owner / advisor)
 - [firstname_lastname.md] → role
 
-## Company Type
-- **Type:** promoter / investor / SPV
-- **Parent company:** (if applicable)
-
 ## Documents
 - **Statutes:** 
 - **ID documents:** 

@@ -6,13 +6,13 @@ the system must determine if the sender already exists in /data/people
 or /data/companies before creating a new entity.
 
 ## Matching Fields (in order of priority)
-1. Email address → 100% match
-2. Full name (first + last) → 90% match
-3. Company name → 90% match
-4. Phone number → 90% match
-5. First name only → 50% match
-6. Project city/location → 50% match
-7. Partial company name similarity → 50% match
+1. Phone number (normalized for ES/PT prefixes) → 100% match
+2. Email address (lowercase) → 100% match
+3. Full name + same company → 90% match
+4. Full name only → 70% match
+5. First name only → 30% match
+6. Company name (fuzzy: ignore S.L., S.A., underscores, accents) → 90% match
+   for company-to-company matching
 
 ## Match Thresholds
 
