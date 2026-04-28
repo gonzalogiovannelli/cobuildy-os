@@ -15,6 +15,42 @@ else) needs to run on existing data.
 
 ---
 
+## v1.2 — 2026-04-28
+
+### LinkedIn agent (sheet-based) + persist refactor
+
+**LinkedIn agent**
+- New `scripts/linkedin/sheet.js` — reads the Developers tab of the
+  outreach Google Sheet. Auth shared with `scripts/drive`.
+- New `scripts/linkedin/linkedin-agent.js` — processes warm leads
+  (column L = TRUE). For each warm row: existing match (≥90%) → refresh
+  `Last LinkedIn`; new → create person.md + company.md from templates.
+  Idempotent (re-runs don't duplicate).
+- Out of scope for v1: Investors tab, Dani's parallel outreach, Kommo
+  push, write-back to the sheet.
+- Run with: `node scripts/linkedin/linkedin-agent.js`. Sheet ID can be
+  overridden via `LINKEDIN_SHEET_ID` env var.
+
+**Refactor: shared persistence module**
+- New `scripts/entity/persist.js` — extracted shared primitives that
+  every agent will need: `slugify`, `today`, `setField`/`setFields`,
+  `fillCompanyMd`, `fillFeedbackMd`, `updatePersonFields`,
+  `addActiveProject`, `appendPersonLog`, `appendProjectLog`,
+  `logInteraction`, `logEntry`, `getActiveProjectCodes`,
+  `reserveProjectCode`.
+- `scripts/email/email-agent.js` updated to import from persist.js
+  instead of carrying its own copy. ~150 lines deduplicated.
+
+**Docs**
+- `knowhow/linkedin-agent.md` rewritten to describe the sheet-based
+  flow (was describing a hypothetical direct-LinkedIn integration).
+- Cleaned references to the deleted `data/outreach/linkedin-pipeline.md`
+  in communication-agent, data-enrichment, email-agent.
+- `data/outreach/linkedin-pipeline.md` removed (replaced by the Google
+  Sheet as SSOT for the outreach pipeline).
+
+---
+
 ## v1.1 — 2026-04-28
 
 ### Cleanup pass after first end-to-end email run

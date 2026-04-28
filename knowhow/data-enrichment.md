@@ -76,7 +76,8 @@ Sources: email agent, Kommo agent, Aircall agent, Granola agent, LinkedIn sheet,
 ### Automatic (no confirmation needed)
 - New email from known contact → update last interaction in person.md
 - New Kommo stage change → update stage in person.md
-- New LinkedIn connection accepted → update status in linkedin-pipeline.md
+- New LinkedIn connection accepted → tick column in LinkedIn outreach Sheet
+  (the Sheet is SSOT for the outreach pipeline, not a file in this repo)
 
 ### Semi-automatic (agent proposes, Gonzalo confirms)
 - Email with project data → propose project creation with extracted fields

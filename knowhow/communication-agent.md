@@ -33,12 +33,14 @@ The agent suggests messages but only sends automatically in specific cases.
 
 ### Case C: Contact is new + irrelevant profile (not real estate)
 - Do NOT send template
-- Log as `connected` in linkedin-pipeline.md
-- No further action unless they write first
+- Mark `Connection accepted` in the LinkedIn outreach Google Sheet
+  (Developers tab) — no further action
 
 ### Step 2 — They reply (first time)
-- Mark as `lead` in linkedin-pipeline.md
-- Create person.md if not exists
+- Tick `Reply received` in the Sheet → on the next run of the
+  LinkedIn agent, person.md is created automatically
+- The agent runs entity matching, so if the person already exists
+  via email/Kommo, no duplicate is created
 - Suggest a response to Gonzalo based on what they said
 - Do NOT send automatically
 - Format: "Suggested reply for [Name]: [message]. Send? yes / edit / discard"

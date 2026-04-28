@@ -1,49 +1,69 @@
 # LinkedIn Agent — Rules and Workflow
 
 ## Purpose
-Automate LinkedIn outreach tracking and lead management
-using Gonzalo's Sales Navigator account.
+Convert warm LinkedIn outreach leads into entities in the system. The
+sheet is the SSOT for the outreach pipeline; this agent only acts when a
+lead becomes warm.
 
-## Pipeline Statuses
-Defined in /data/outreach/linkedin-pipeline.md
-- `requested` → connection request sent
-- `connected` → accepted, no message sent yet
-- `messaged` → first message sent, waiting for reply
-- `lead` → replied, person.md created in /data/people
+## Source of truth
+A Google Sheet maintained manually by Gonzalo:
+- Tab `Developers` → outreach to real estate developers (Gonzalo's column,
+  ignoring Dani's parallel outreach for v1)
+- Tab `Investors` → outreach to investors (Dona) — out of scope for v1
 
-## Outreach Workflow
+The sheet ID is in `scripts/.env` as `LINKEDIN_SHEET_ID`.
 
-### Step 1 — New connection request sent
-- Add row to linkedin-pipeline.md
-- Fields: name, LinkedIn URL, company, status: requested, date
+## Pipeline columns (Developers tab)
+| Col | Field | Meaning |
+|-----|-------|---------|
+| H | Gonzalo connection sent | Date the request was sent |
+| I | Connection accepted | TRUE when accepted |
+| K | Msg sent | TRUE when first message sent |
+| L | **Reply received** | TRUE → **warm lead, agent acts** |
 
-### Step 2 — Request accepted
-- Update status to `connected` in linkedin-pipeline.md
-- Note date of acceptance
+A row is warm only when `L = TRUE`. The agent ignores everything else.
 
-### Step 3 — First message sent
-- Update status to `messaged`
-- Note message date and a brief summary of the message sent
+## Agent flow
 
-### Step 4 — They reply
-- Update status to `lead`
-- Trigger entity creation: create person.md from template
-- Run entity matching first (they may already exist from another channel)
-- Log first interaction in person.md activity summary
+When `node scripts/linkedin/linkedin-agent.js` runs:
 
-## Inbound Messages Workflow
+1. Read all rows from the `Developers` tab.
+2. Filter to rows where `Reply received = TRUE`.
+3. For each warm row:
+   - Run entity matching against `/data/people` (name + company).
+   - **Existing match (≥90%):** refresh `LinkedIn` URL, `Last LinkedIn`,
+     `Last updated` on the existing person.md. Log the interaction.
+   - **No match:** create `person.md` from template with:
+     - `Channel: linkedin`
+     - `Role: promoter`
+     - `LinkedIn:` employee link from col G
+     - `Current stage: prospecting`
+     - `First contact date:` parsed from col H if present, else today
+     - `Last LinkedIn:` today
+     - `Notes:` content of col J ("Info") if any
+   - If a company name is in col B, run company matching:
+     - Existing company match (≥90%): link the new person.md to it
+     - No match: create `company.md` from template
+   - Append a log entry to person.md `Interactions Log`.
 
-### When someone replies on LinkedIn
-- Run entity matching against /data/people and /data/companies
-- If known → add log entry to relevant project or person file
-- If new → create person.md, add to pipeline as `lead`
+## Idempotency
+The agent is safe to re-run. The second pass on the same warm row finds
+the existing person via match, and only refreshes `Last LinkedIn` —
+no duplicates created. Rows on the sheet stay marked `L = TRUE` forever;
+that's fine.
 
-## Daily Outreach Target
-- Goal: 30 new connection requests per day
-- LinkedIn pipeline is the source of truth for outreach volume and conversion
+## What the agent does NOT do (v1)
+- Send LinkedIn messages or connection requests (manual)
+- Track Dani's parallel outreach (cols M-N)
+- Process the Investors tab
+- Push leads to Kommo with a `linkedin` tag (deferred to phase 2)
+- Modify the sheet (read-only)
+
+## Daily outreach target
+Goal: 30 new connection requests per day, tracked manually in the sheet.
 
 ## Notes
-- LinkedIn DMs are part of the interaction history of a person
-- All LinkedIn messages must be logged in person.md or project log.md
-- Sales Navigator is used by Gonzalo only
-- A teammate may occasionally use Gonzalo's account for outreach
+- LinkedIn DMs are part of a person's interaction history — once they
+  reply and become a person.md, future LinkedIn touches go to either the
+  project log (if they have one) or person.md `Interactions Log`.
+- Sales Navigator is used by Gonzalo only for outreach.

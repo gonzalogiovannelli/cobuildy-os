@@ -40,8 +40,8 @@ and pulls unread INBOX messages.
 
 ### Case D: New person + no attachment
 - Create person.md from template
-- Add to linkedin-pipeline.md if came from LinkedIn
-- Log the interaction
+- Log the interaction (LinkedIn outreach is tracked separately in the
+  LinkedIn outreach Sheet — not from this agent)
 
 ## Step 4 — Drive folder creation (for new projects)
 - Folder name format: [CODE] - [City] - [Promoter]
