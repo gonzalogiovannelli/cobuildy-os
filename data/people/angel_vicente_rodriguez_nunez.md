@@ -5,8 +5,8 @@
 - **Phone:** 
 - **WhatsApp:** 
 - **LinkedIn:** https://www.linkedin.com/sales/lead/ACwAAAOcLCcByHXfEwiGKQcJaQsDLjj50FMKNnM,NAME_SEARCH,vRHJ
-- **Kommo Lead ID:** 
-- **Kommo Contact ID:** 
+- **Kommo Lead ID:** 25009723
+- **Kommo Contact ID:** 40861947
 
 ## Role
 - **Role:** promoter
@@ -20,7 +20,7 @@
 
 ## Status
 - **Current stage:** prospecting
-- **Last updated:** 2026-04-28
+- **Last updated:** 2026-04-29
 
 ## Communication Preferences
 - **Preferred channel:** 
@@ -33,7 +33,7 @@
 - **Last email:** 
 - **Last call:** 
 - **Last meet:** 
-- **Last LinkedIn:** 2026-04-28
+- **Last LinkedIn:** 2026-04-29
 - **Last Kommo:** 
 - **Next action:** 
 
@@ -43,5 +43,9 @@
 
 ## Interactions Log
 _(newest first — appended automatically by agents)_
+
+2026-04-29 | LinkedIn | warm reply via outreach to Habitat Promotora | first conversation
+
+2026-04-29 | LinkedIn | warm reply via outreach to Habitat Promotora | first conversation
 
 2026-04-28 | LinkedIn | warm reply via outreach to Habitat Promotora | first conversation

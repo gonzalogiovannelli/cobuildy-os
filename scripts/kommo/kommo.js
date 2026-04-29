@@ -36,6 +36,24 @@ async function kommoGet(endpoint, params = {}) {
   return res.json();
 }
 
+async function kommoWrite(method, endpoint, body) {
+  if (!BASE_URL) {
+    throw new Error('KOMMO_TOKEN and KOMMO_SUBDOMAIN must be set in scripts/.env');
+  }
+  const url = BASE_URL + endpoint;
+  console.error(`[kommo] ${method}`, url);
+  const res = await fetch(url, {
+    method,
+    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    throw new Error(`Kommo ${res.status} on ${method} ${endpoint}: ${await res.text()}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
 // ── Per-run caches (pipelines and users fetched at most once) ─────────────────
 
 let _pipelineCache = null;
@@ -170,7 +188,70 @@ async function getContact(id) {
   };
 }
 
-module.exports = { listLeads, getLead, getLeadNotes, listContacts, getContact };
+// ── Write operations (no DELETE — moveLeadToTrash instead per house policy) ──
+
+// Returns array of statuses { id, name, sort, color } for a pipeline.
+async function getPipelineStatuses(pipelineId) {
+  const data = await kommoGet(`/leads/pipelines/${pipelineId}`);
+  return data._embedded?.statuses || [];
+}
+
+// Create a lead with embedded contact and/or company atomically. The
+// /leads/complex endpoint dedupes companies by name and returns the
+// resulting { id, contact_id, company_id } per lead.
+//
+//   payload = {
+//     name, pipelineId, statusId,
+//     contact: { firstName, lastName, customFields: [...] } | null,
+//     company: { name, customFields: [...] } | null,
+//     leadCustomFields: [...] | null,
+//   }
+async function createLeadComplex(payload) {
+  const body = [{
+    name:        payload.name,
+    pipeline_id: payload.pipelineId,
+    status_id:   payload.statusId,
+    custom_fields_values: payload.leadCustomFields || undefined,
+    _embedded: {
+      contacts: payload.contact ? [{
+        first_name: payload.contact.firstName,
+        last_name:  payload.contact.lastName,
+        custom_fields_values: payload.contact.customFields || undefined,
+      }] : undefined,
+      companies: payload.company ? [{
+        name: payload.company.name,
+        custom_fields_values: payload.company.customFields || undefined,
+      }] : undefined,
+    },
+  }];
+  const res = await kommoWrite('POST', '/leads/complex', body);
+  return Array.isArray(res) ? res[0] : res;
+}
+
+async function addNote(leadId, text) {
+  return kommoWrite('POST', `/leads/${leadId}/notes`, [{
+    note_type: 'common',
+    params: { text },
+  }]);
+}
+
+async function updateLeadStatus(leadId, statusId) {
+  return kommoWrite('PATCH', `/leads/${leadId}`, { status_id: statusId });
+}
+
+// House policy: agents NEVER delete leads. They move them to a "For
+// manually delete" status so Gonzalo can review and clean up via UI.
+async function moveLeadToTrash(leadId, trashStatusId) {
+  return updateLeadStatus(leadId, trashStatusId);
+}
+
+module.exports = {
+  // read
+  listLeads, getLead, getLeadNotes, listContacts, getContact,
+  // write
+  getPipelineStatuses, createLeadComplex, addNote,
+  updateLeadStatus, moveLeadToTrash,
+};
 
 if (require.main !== module) return;
 

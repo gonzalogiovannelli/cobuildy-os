@@ -89,7 +89,8 @@ function getActiveProjectCodes(personSlug) {
   const filePath = path.join(PEOPLE_DIR, `${personSlug}.md`);
   if (!fs.existsSync(filePath)) return [];
   const text = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
-  const m = text.match(/^- \*\*Active projects:\*\*\s*(.+)$/m);
+  // [ \t]* not \s* — see readField in entity/match.js for the same pitfall.
+  const m = text.match(/^- \*\*Active projects:\*\*[ \t]*([^\n]*)$/m);
   if (!m) return [];
   return m[1].match(/\b(?:ES|PT)-\d{3}\b/g) || [];
 }

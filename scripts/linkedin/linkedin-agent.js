@@ -16,6 +16,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const { readDevelopersTab } = require('./sheet.js');
 const { findPersonMatches, findCompanyMatches } = require('../entity/match.js');
+const { createLeadComplex, addNote } = require('../kommo/kommo.js');
 const {
   PEOPLE_DIR, COMPANIES_DIR,
   today, slugify, setFields, readTemplate,
@@ -26,6 +27,15 @@ const {
 
 const SHEET_ID = process.env.LINKEDIN_SHEET_ID
   || '1cR51zYulygDUKc8dEATWsv3ksMMJf7H56clXsDsO6vY';
+
+// Kommo destination for warm LinkedIn leads. IDs from
+// scripts/_kommo_smoke.js validation run; can be overridden via env.
+const KOMMO_PIPELINE_ID    = parseInt(process.env.KOMMO_LINKEDIN_PIPELINE_ID    || '13581344',  10);
+const KOMMO_WARM_STATUS_ID = parseInt(process.env.KOMMO_LINKEDIN_WARM_STATUS_ID || '105198184', 10);
+
+// Custom field IDs in this Kommo account (from inspection)
+const CF_CONTACT_LINKEDIN = 698818;
+const CF_CONTACT_POSITION = 619300;
 
 // "4/24/2026" → "2026-04-24"
 function parseDate(s) {
@@ -73,6 +83,101 @@ function fillPersonMdLinkedIn(row, companySlug, firstContactDate) {
   return text;
 }
 
+// Read the "Kommo Lead ID" field from an existing person.md (returns null
+// if not set yet). Used to make Kommo push idempotent.
+function readKommoLeadId(personSlug) {
+  const fs = require('fs');
+  const filePath = path.join(PEOPLE_DIR, `${personSlug}.md`);
+  if (!fs.existsSync(filePath)) return null;
+  const text = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
+  // [ \t]* matches only horizontal whitespace — \s* would greedily eat the
+  // newline too and capture content from the next line.
+  const m = text.match(/^- \*\*Kommo Lead ID:\*\*[ \t]*([^\n]*)$/m);
+  if (!m) return null;
+  const v = m[1].trim();
+  return v ? v : null;
+}
+
+// Build the body of the [Cobuildy OS] note posted to the Kommo lead.
+function buildKommoNote(row, personSlug) {
+  const lines = [
+    '[Cobuildy OS] Warm lead via LinkedIn outreach',
+    '',
+    `Channel: LinkedIn (Sales Navigator)`,
+    `Company: ${row.companyName || '(no company)'}`,
+  ];
+  if (row.info) lines.push(`Info: ${row.info}`);
+  if (row.connectionSent) lines.push(`Connection sent: ${row.connectionSent}`);
+  lines.push(`Reply received: ${today()}`);
+  lines.push('');
+  lines.push(`Detalles en repo: /data/people/${personSlug}.md`);
+  return lines.join('\n');
+}
+
+// Push a freshly-warm linkedin lead into Kommo (creates Lead + Contact +
+// Company + first note atomically) and store the resulting IDs in the
+// person.md. Idempotent — if person.md already has a Kommo Lead ID, we
+// just append a fresh note instead of creating a duplicate lead.
+async function pushToKommo(row, personSlug) {
+  const existingLeadId = readKommoLeadId(personSlug);
+  const noteText = buildKommoNote(row, personSlug);
+
+  if (existingLeadId) {
+    try {
+      await addNote(existingLeadId, noteText);
+      console.log(`  ↻ Refreshed Kommo lead ${existingLeadId} with new note`);
+    } catch (err) {
+      console.error(`  ✗ Kommo addNote failed: ${err.message}`);
+    }
+    return;
+  }
+
+  // First, last name split (single-space; Spanish double last names stay as one).
+  const parts = row.employeeName.trim().split(/\s+/);
+  const firstName = parts[0] || '';
+  const lastName  = parts.slice(1).join(' ');
+
+  const contactCustomFields = [];
+  if (row.employeeLink) {
+    contactCustomFields.push({ field_id: CF_CONTACT_LINKEDIN, values: [{ value: row.employeeLink }] });
+  }
+
+  const leadName = row.companyName ? `${row.employeeName}/${row.companyName}` : row.employeeName;
+
+  let result;
+  try {
+    result = await createLeadComplex({
+      name:       leadName,
+      pipelineId: KOMMO_PIPELINE_ID,
+      statusId:   KOMMO_WARM_STATUS_ID,
+      contact: {
+        firstName,
+        lastName,
+        customFields: contactCustomFields.length ? contactCustomFields : undefined,
+      },
+      company: row.companyName ? { name: row.companyName } : null,
+    });
+  } catch (err) {
+    console.error(`  ✗ Kommo createLeadComplex failed: ${err.message}`);
+    return;
+  }
+
+  // Save the Kommo IDs back on person.md so subsequent runs are idempotent
+  // and other agents can address the lead by ID.
+  updatePersonFields(personSlug, {
+    'Kommo Lead ID':    result.id,
+    'Kommo Contact ID': result.contact_id || '',
+  });
+  console.log(`  ✓ Created Kommo lead ${result.id} (contact ${result.contact_id}, company ${result.company_id})`);
+
+  try {
+    await addNote(result.id, noteText);
+    console.log(`  ✓ Posted [Cobuildy OS] note on Kommo lead ${result.id}`);
+  } catch (err) {
+    console.error(`  ✗ Kommo addNote failed: ${err.message}`);
+  }
+}
+
 function resolveCompany(companyName, personSlug, personName) {
   if (!companyName) return null;
   const matches = findCompanyMatches({ name: companyName });
@@ -115,6 +220,7 @@ async function processWarmRow(row) {
       logEntry('LinkedIn', `warm reply via outreach to ${row.companyName}`, 'first conversation'),
     );
     console.log(`  ↻ Refreshed LinkedIn fields on ${top.slug}.md`);
+    await pushToKommo(row, top.slug);
     return;
   }
 
@@ -140,6 +246,8 @@ async function processWarmRow(row) {
     personSlug,
     logEntry('LinkedIn', `warm reply via outreach to ${row.companyName}`, 'first conversation'),
   );
+
+  await pushToKommo(row, personSlug);
 }
 
 async function main() {

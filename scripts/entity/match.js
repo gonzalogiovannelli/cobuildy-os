@@ -52,9 +52,11 @@ function normalizePhone(p) {
 // ── File parsing ─────────────────────────────────────────────────────────────
 
 // Pull the value sitting after "- **Field:**" on a markdown bullet line.
+// [ \t]* matches only horizontal whitespace — \s* would greedily eat the
+// newline too and capture content from the next line.
 function readField(text, field) {
   const safe = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re   = new RegExp(`^- \\*\\*${safe}:\\*\\*\\s*(.*)$`, 'm');
+  const re   = new RegExp(`^- \\*\\*${safe}:\\*\\*[ \\t]*([^\\n]*)$`, 'm');
   const m    = text.match(re);
   return m ? m[1].trim() : '';
 }
