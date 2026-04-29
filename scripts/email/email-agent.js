@@ -223,8 +223,6 @@ function fillLogMd(code, subject) {
 // Apply entity-matching policy (see knowhow/entity-matching.md):
 // ≥90% auto-link, 25–89% ask, <25% create new. Returns { slug, existing }
 // where existing is non-null when we're reusing an existing record.
-// <25% create new. Returns { slug, existing } where existing is non-null when
-// we're reusing an existing person record.
 async function resolvePerson(analysis) {
   const candidate = {
     name:    analysis.sender?.name,

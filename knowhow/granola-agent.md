@@ -59,47 +59,58 @@ appropriate workflow based on who hosted the meeting and contact type.
 ## Step 4 — Process verdict (promoter meetings only)
 
 ### viable
-- Assign next project code (ES-00X or PT-00X)
-- Create /data/projects/[CODE]/ from template
-- Save transcription: /data/projects/[CODE]/calls/YYYY-MM-DD-granola.txt
-- Save Granola notes: /data/projects/[CODE]/calls/YYYY-MM-DD-granola-notes.txt
-- Add log entry: YYYY-MM-DD | Meeting (Granola) | [summary] | [next action]
-- Add note in Kommo with project code
+- Reserve the next project code (atomic — see `entity-creation.md`)
+- Create `/data/projects/[CODE]/` from template
+- Save transcription + structured notes alongside the project (path TBD
+  when this agent is built — likely `/data/projects/[CODE]/calls/`)
+- Log entry to project log.md: `YYYY-MM-DD | Meet | [summary] | [next action]`
+- Update person.md `Last meet`, set `Current stage: active`,
+  `Active projects` += new code
+- Push to Kommo (future): note with project code on the linked Kommo lead
 
 ### discarded
-- Log reason in person.md
-- Add log entry: YYYY-MM-DD | Meeting (Granola) | Discarded — [reason] | No action
+- Log to project log.md if person already has a project, otherwise to
+  person.md `Interactions Log`
+- Format: `YYYY-MM-DD | Meet | Discarded — [reason] | No action`
+- Update `Last meet` on person.md
 
 ### pending
-- Log in person.md activity summary
-- Add log entry: YYYY-MM-DD | Meeting (Granola) | Pending — [reason] | Follow up on [date]
+- Same routing as discarded
+- Format: `YYYY-MM-DD | Meet | Pending — [reason] | Follow up on [date]`
+- Update `Last meet` on person.md
 
 ## Step 5 — Save transcription
-- If project exists → /data/projects/[CODE]/calls/YYYY-MM-DD-granola.txt
-- If no project → /data/people/calls/firstname_lastname/YYYY-MM-DD-granola.txt
+- If a project exists → save to `/data/projects/[CODE]/calls/YYYY-MM-DD-granola.txt`
+  (raw transcript) and `YYYY-MM-DD-granola-notes.txt` (structured notes)
+- If no project → exact path TBD when this agent is built (same TBD as
+  in `aircall-agent.md`)
+
+## Channel name in logs
+Use the canonical channel: `Meet`. Source (Granola, Zoom, Google Meet)
+goes in the summary text if relevant, not in the channel column.
 
 ## Duplicate Meeting Detection
 
 ### Same meeting rule
-- If two or more team members hosted a Granola session with:
-  - Same Meet/Zoom link OR
-  - Same date + same attendees + overlapping time
-- → Treat as one meeting, not multiple
-- → Keep the transcription with the longest duration
-- → Discard the others
+If two or more team members hosted a Granola session with:
+- Same Meet/Zoom link, OR
+- Same date + same attendees + overlapping time
+
+→ Treat as one meeting, not multiple. Keep the transcription with the
+longest duration; discard the others.
 
 ### Internal meetings (team only)
-- If all attendees are Gonzalo, Dona, or Danila
-- → Log as internal meeting, no client entity matching needed
-- → Save in /knowhow/internal-meetings/YYYY-MM-DD.txt if relevant
+If all attendees are Gonzalo, Dona, or Danila → log as internal meeting,
+no client entity matching needed. Path for storage TBD when this agent
+is built (likely `/data/internal-meetings/YYYY-MM-DD.md` or skip
+storage entirely and only summarize on demand).
 
 ### Client meeting with multiple team members
-- If one or more attendees are external contacts
-- → Run entity matching on external attendees only
-- → Keep longest transcription
-- → Associate to the relevant client and project
+If one or more attendees are external contacts → run entity matching on
+external attendees only, keep longest transcription, associate to the
+relevant client and project.
 
 ## Notes
 - Granola covers video calls only, Aircall covers phone calls
-- Granola provides both transcription and structured notes
-- Structured notes from Granola are preferred over raw transcription for log summaries
+- Structured notes from Granola are preferred over raw transcription
+  when summarizing for log entries

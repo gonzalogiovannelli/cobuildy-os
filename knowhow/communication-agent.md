@@ -1,89 +1,77 @@
 # Communication Agent — Rules and Workflow
 
 ## Purpose
-Define tone, voice and messaging rules for all outbound communication.
-The agent suggests messages but only sends automatically in specific cases.
+Centralise the rules and templates for outbound communication
+(LinkedIn DMs, email replies, follow-ups). The system mostly **suggests**
+text — it does not send anything automatically.
 
-## Language Rules
-- Contact based in Spain or Spanish name → write in Spanish
-- Contact based outside Spain or non-Spanish name → write in English
-- Always match the language the contact uses first
+For tone and voice see `knowhow/tone-and-voice.md` (single source on
+greetings, closings, language, examples).
 
-## Tone
-- Friendly but professional
-- First name basis always (Hi Alberto, Hola Carlos)
-- Never formal openers (Dear Sir, Estimado señor)
-- Direct and concise, no filler sentences
+## What is automatic vs manual
 
-## LinkedIn Messaging Workflow
+| Action | Automatic | Manual |
+|---|:-:|:-:|
+| Send LinkedIn connection request | | ✓ (Sales Navigator) |
+| Send LinkedIn first message after acceptance | | ✓ |
+| Send any subsequent LinkedIn DM | | ✓ |
+| Reply to incoming email | | ✓ |
+| Update LinkedIn outreach Sheet (status changes) | | ✓ |
+| Process warm LinkedIn lead (`Reply received = TRUE`) | ✓ | (linkedin-agent) |
+| Refresh `Last <channel>` on person.md | ✓ | (per-channel agent) |
 
-### Step 1 — Connection accepted
-- Run entity matching against /data/people and /data/companies
-- Check if contact already exists in system (from Kommo, email, etc.)
+Bottom line: **outreach is human-driven**. The system only acts when
+something has already happened (a reply arrived, a meeting ended, a
+document was uploaded).
 
-### Case A: Contact already exists in system
-- Do NOT send any message
-- Notify Gonzalo: "[Name] accepted your connection. Already in system
-  as [status]. LinkedIn added to their identities. No message sent."
-- Update person.md identities with LinkedIn URL
+## LinkedIn workflow (current reality)
 
-### Case B: Contact is new + relevant profile (works in real estate)
-- Send template message automatically
-- Log: YYYY-MM-DD | LinkedIn | Connection accepted, template sent | Await reply
+The LinkedIn outreach pipeline lives in a Google Sheet (Developers tab),
+not in this repo. Gonzalo maintains it manually:
+1. Sends a connection request → ticks `Gonzalo connection sent` (col H)
+2. Connection accepted → ticks `Connection accepted` (col I)
+3. Sends first DM → ticks `Msg sent` (col K)
+4. Receives reply → ticks `Reply received` (col L) ← warm lead
 
-### Case C: Contact is new + irrelevant profile (not real estate)
-- Do NOT send template
-- Mark `Connection accepted` in the LinkedIn outreach Google Sheet
-  (Developers tab) — no further action
+When a row reaches step 4, the next run of `linkedin-agent` creates the
+`person.md` (and `company.md` if applicable) automatically. Entity
+matching prevents duplicates if the contact already exists from another
+channel (email / Kommo).
 
-### Step 2 — They reply (first time)
-- Tick `Reply received` in the Sheet → on the next run of the
-  LinkedIn agent, person.md is created automatically
-- The agent runs entity matching, so if the person already exists
-  via email/Kommo, no duplicate is created
-- Suggest a response to Gonzalo based on what they said
-- Do NOT send automatically
-- Format: "Suggested reply for [Name]: [message]. Send? yes / edit / discard"
+After person.md exists, future LinkedIn DMs from Gonzalo are still
+manual. Only the metadata gets updated by agents (`Last LinkedIn`,
+log entries) when the next sync happens — see linkedin-agent.md.
 
-### Step 3 — Conversation continues
-- After each message they send, suggest next reply
-- Never send automatically after the first template
-- Always show suggestion and wait for Gonzalo's approval
+## LinkedIn message templates (reference for Gonzalo)
 
-### Step 4 — Goal: book a call
-- All conversations should move toward booking a call with Gonzalo
-- Suggest Calendly link when the moment is right:
-  "They seem interested. Suggested next message includes Calendly link.
-  Send? yes / edit / discard"
+These are reference templates Gonzalo copies/adapts when sending the
+first message after a connection is accepted. Use the language the
+contact uses; default to Spanish for Spanish names / Spain-based
+contacts, English otherwise.
 
-## LinkedIn Message Templates
+### English
+> Hi [Name], I came across your work on [project type] in [location].
+> At Cobuildy we help developers structure deals and raise capital from
+> professional investors — success fee only, no upfront cost.
+> Are you working on anything you'd like to explore financing for?
 
-### First message after connection (English)
-"Hi [Name], I came across your work on [project type] in [location].
-At Cobuildy we help developers structure deals and raise capital from
-professional investors — success fee only, no upfront cost.
-Are you working on anything you'd like to explore financing for?"
+### Spanish
+> Hola [Name], vi que estás trabajando en proyectos en [location].
+> En Cobuildy ayudamos a promotores a estructurar operaciones y levantar
+> capital con inversores profesionales — solo cobramos si levantamos
+> el capital. ¿Tienes algún proyecto en marcha que quieras explorar?
 
-### First message after connection (Spanish)
-"Hola [Name], vi que estás trabajando en proyectos en [location].
-En Cobuildy ayudamos a promotores a estructurar operaciones y levantar
-capital con inversores profesionales — solo cobramos si levantamos el capital.
-¿Tienes algún proyecto en marcha que quieras explorar?"
+### When they write first
+No template. Read what they said, write a personalised reply that
+moves toward booking a call.
 
-### They write first (no template needed)
-- Read their message
-- Suggest a natural response that moves toward a call
-- Always personalize based on what they said
+## Email follow-up — future scope
+Idea: after each outbound email, if no reply in 5 business days,
+the system suggests a follow-up message to Gonzalo. Suggestion only,
+never sent automatically. **Not implemented yet** — Gonzalo currently
+tracks follow-ups manually.
 
-## Email Follow-up Suggestions
-- After each outbound email, if no reply in 5 business days
-  → suggest a follow-up to Gonzalo
-- Never send follow-ups automatically
-- Format: "No reply from [Name] in 5 days. Suggested follow-up: [message].
-  Send? yes / edit / discard"
-
-## Notes
-- Automatic sending: ONLY the first LinkedIn template
-- Everything else: suggest and wait for approval
-- Goal of every conversation: book a call via Calendly
-- Never push too hard, one follow-up maximum per channel
+## Goal of every conversation
+Book a call (Calendly link). Do not push more than one follow-up per
+channel. If silence after a follow-up, leave the lead in `dormant` and
+move on.

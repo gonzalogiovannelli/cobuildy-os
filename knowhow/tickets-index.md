@@ -1,35 +1,27 @@
 # Tickets Index
 
 ## Purpose
-Track all system issues, improvement ideas and pending decisions.
-Reviewed every Friday (garbage collection day).
-Each ticket has its own file in /knowhow/tickets/
+Track system issues, improvement ideas and pending decisions.
+One file per ticket in `/knowhow/tickets/`. Review every Friday
+(garbage collection day).
 
 ## How to create a ticket
 Ask Claude Code:
-"Open a ticket: [type] — [description]"
-Types: bug / improvement / pending-decision
+> "Open a ticket: [type] — [description]"
 
-## Open Tickets
+Types: `bug` / `improvement` / `pending-decision`.
 
-### Bugs
-| ID | Title | Date | Status |
-|----|-------|------|--------|
+## Open
 
-### Improvements
-| ID | Title | Date | Status |
-|----|-------|------|--------|
+| ID | Type | Title | Date |
+|----|------|-------|------|
+| T-001 | pending-decision | Drive folder structure — company documents | 2025-04-27 |
+| T-002 | pending-decision | Personal WhatsApp migration | 2025-04-27 |
 
-### Pending Decisions
-| ID | Title | Date | Status |
-|----|-------|------|--------|
-| T-001 | Google Drive folder structure — company documents | 2025-04-27 | open |
-| T-002 | Personal WhatsApp migration | 2025-04-27 | open |
+## Resolved
 
-## Resolved Tickets
-| ID | Title | Date | Resolution date |
-|----|-------|------|-----------------|
+_(none yet — when a ticket is closed, move its row here with the resolution date and a one-line summary)_
 
-## Review Cadence
-- Every Friday: review all open tickets
-- Prioritize bugs first, then pending decisions, then improvements
+## Review cadence
+Every Friday: triage all open tickets. Order: bugs first, then pending
+decisions, then improvements.

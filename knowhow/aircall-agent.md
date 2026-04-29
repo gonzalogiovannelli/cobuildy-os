@@ -65,23 +65,35 @@ who called, call direction, and contact type.
 ## Step 4 — Process verdict (promoter calls only)
 
 ### viable
-- Assign next project code (ES-00X or PT-00X)
-- Create /data/projects/[CODE]/ from template
-- Save transcription: /data/projects/[CODE]/calls/YYYY-MM-DD-aircall.txt
-- Add log entry: YYYY-MM-DD | Call (Aircall) | [summary] | [next action]
-- Add note in Kommo with project code
+- Reserve the next project code (atomic — see `entity-creation.md`)
+- Create `/data/projects/[CODE]/` from template
+- Save transcription alongside the project (path TBD when this agent is
+  built — likely `/data/projects/[CODE]/calls/`)
+- Log entry to project log.md: `YYYY-MM-DD | Call | [summary] | [next action]`
+- Update person.md `Last call`, set `Current stage: active`,
+  `Active projects` += new code
+- Push to Kommo (future): note with project code on the linked Kommo lead
 
 ### discarded
-- Log reason in person.md
-- Add log entry: YYYY-MM-DD | Call (Aircall) | Discarded — [reason] | No action
+- Log to project log.md if person already has a project, otherwise to
+  person.md `Interactions Log`
+- Format: `YYYY-MM-DD | Call | Discarded — [reason] | No action`
+- Update `Last call` on person.md
 
 ### pending
-- Log in person.md activity summary
-- Add log entry: YYYY-MM-DD | Call (Aircall) | Pending — [reason] | Follow up on [date]
+- Same routing as discarded
+- Format: `YYYY-MM-DD | Call | Pending — [reason] | Follow up on [date]`
+- Update `Last call` on person.md
 
 ## Step 5 — Save transcription
-- If project exists → /data/projects/[CODE]/calls/YYYY-MM-DD-aircall.txt
-- If no project → /data/people/calls/firstname_lastname/YYYY-MM-DD-aircall.txt
+- If a project exists → save to `/data/projects/[CODE]/calls/YYYY-MM-DD-aircall.txt`
+- If no project → exact path TBD when this agent is built. Options
+  under consideration: side-file `/data/people/<slug>-calls/...` or
+  separate `/data/calls/<slug>/...` directory.
+
+## Channel name in logs
+Use the canonical channel: `Call`. Source (Aircall vs Granola) goes in
+the summary text if relevant, not in the channel column.
 
 ## Notes
 - Inbound calls always go to Dona

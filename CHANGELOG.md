@@ -15,6 +15,58 @@ else) needs to run on existing data.
 
 ---
 
+## v1.3 — 2026-04-29
+
+### Deep review pass: knowhow ↔ code drift cleanup
+
+**email-agent.md — full rewrite**
+- Old A/B/C/D case model (Known/New × Attachment/No-attachment) removed.
+  It never matched the actual flow.
+- Added: pre-filter heuristic, JSON contract from the LLM call,
+  `isProjectRelated` branching, 3-criteria gate, verdict options and
+  meanings, atomic project code reservation, log routing rule, Drive
+  folder format with Promoter Files subfolder.
+- Removed obsolete "Outbound Emails — Rules" (no code exists for it;
+  will come back when implemented).
+
+**linkedin-agent.md — clarified logging**
+- For new persons (most warm leads) → log to person.md `Interactions Log`.
+- For existing persons with a project → log to project's log.md via
+  the shared `logInteraction` helper.
+
+**kommo-agent.md — fact corrections**
+- `Developers Linkedin` pipeline mentioned (linkedin-agent push target).
+- Field name corrected to `Kommo Lead ID` and `Kommo Contact ID`.
+- Drive folder rule updated: created with the project on `viable`
+  verdict, not gated on document arrival.
+- "Enrich Kommo from the system" section marked as TBD.
+
+**aircall-agent.md and granola-agent.md — channel naming + routing**
+- Canonical channels in logs: `Call` and `Meet` (no longer
+  `Call (Aircall)` / `Meeting (Granola)`). Source goes in summary text.
+- Log routing follows the project-vs-person rule (project log if a
+  project exists, person.md otherwise).
+- Phantom paths (`/data/projects/[CODE]/calls/`,
+  `/data/people/calls/<slug>/`, `/knowhow/internal-meetings/`) flagged
+  as TBD until the agent is built.
+
+**communication-agent.md — full rewrite**
+- Reoriented around the manual reality: outreach is human-driven, the
+  system suggests rather than sends. The old "auto-send first message"
+  flow described an integration that never existed.
+- Added explicit "automatic vs manual" table.
+- Pointed to `tone-and-voice.md` for tone (de-duplicated).
+- LinkedIn workflow now describes the Sheet-based reality.
+
+**tickets-index.md — slim down**
+- Removed empty Bugs and Improvements tables (visual noise).
+- Single Open table with Type column.
+
+**email-agent.js — minor**
+- Removed duplicate comment lines (residue of earlier edits).
+
+---
+
 ## v1.2 — 2026-04-28
 
 ### LinkedIn agent (sheet-based) + persist refactor

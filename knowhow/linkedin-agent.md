@@ -44,7 +44,12 @@ When `node scripts/linkedin/linkedin-agent.js` runs:
    - If a company name is in col B, run company matching:
      - Existing company match (≥90%): link the new person.md to it
      - No match: create `company.md` from template
-   - Append a log entry to person.md `Interactions Log`.
+   - Log the interaction:
+     - For **new** persons (most warm leads, no project yet) → entry
+       goes to `person.md` `Interactions Log` directly.
+     - For **existing** persons that already have a project (rare on
+       LinkedIn entry but possible) → entry goes to that project's
+       `log.md` via the shared `logInteraction` helper.
 
 ## Idempotency
 The agent is safe to re-run. The second pass on the same warm row finds

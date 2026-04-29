@@ -1,78 +1,102 @@
 # Email Agent — Rules and Workflow
 
 ## Purpose
-Automatically process incoming emails to Gonzalo's Cobuildy account,
-identify the sender, and take the appropriate action in the system.
+Process emails arriving at Gonzalo's Cobuildy mailbox, identify the sender,
+persist them as a contact in the system, and — if the lead is ripe —
+trigger project creation under Gonzalo's verdict.
 
 ## Trigger
-A new email arrives at gonzalog@cobuildy.com (operational mailbox).
-The agent is invoked manually for now (`node scripts/email/email-agent.js`)
-and pulls unread INBOX messages.
+Operational mailbox: `gonzalog@cobuildy.com` (IMAP).
+Run manually for now: `node scripts/email/email-agent.js`.
+Pulls the last 20 emails from `INBOX`.
 
-## Step 1 — Identify the sender
-- Extract: name, email address, phone (if present), company name (if present)
-- Run entity matching against /data/people and /data/companies
-- Follow rules defined in /knowhow/entity-matching.md
+## Pre-filter (cheap)
+Before invoking the LLM, apply a keyword/attachment heuristic to skip
+clearly irrelevant emails:
+- Email has an attachment → keep
+- Subject or sender contains: `proyecto`, `inversión`, `financiación`,
+  `equity`, `ticket`, `urbanización`, `promoción` → keep
+- Otherwise → skip
 
-## Step 2 — Analyze the email content
-- Does it contain attachments? → note file name, type, size
-- Does it mention a project location?
-- Does it mention financial figures (ticket, area, timeline)?
-- Is it a reply to an existing conversation or a first contact?
+This avoids API spend on newsletters, automated notifications, etc.
 
-## Step 3 — Determine the action
+## LLM analysis (one Anthropic call per email)
+The agent sends the email subject, sender, date, attachments and (truncated)
+body to Claude with `entity-matching.md` and this file as system context.
+Claude must return a JSON object with this exact shape:
 
-### Case A: Known person + attachment with project info
-- This is a project document → trigger project creation workflow
-- Create /data/projects/[CODE]/ from template if not exists
-- Add log entry in log.md
-- Upload attachment to corresponding Drive folder
-- Update person.md activity summary
+```json
+{
+  "isProjectRelated": true,
+  "sender":      { "name": "...", "email": "...", "company": "..." | null },
+  "projectInfo": { "location": "...", "ticket": "...", "type": "..." } | null,
+  "suggestedAction": "...",
+  "verdict_needed": true
+}
+```
 
-### Case B: Known person + no attachment
-- Add log entry in log.md with email summary
-- Update next action in person.md
+`company` is the legal/commercial name extracted from signature, body,
+or domain — null when nothing reliable is found.
 
-### Case C: New person + attachment with project info
-- Create person.md from template
-- Create company.md if company is mentioned
-- Trigger project creation workflow (same as Case A)
+## Decision flow
 
-### Case D: New person + no attachment
-- Create person.md from template
-- Log the interaction (LinkedIn outreach is tracked separately in the
-  LinkedIn outreach Sheet — not from this agent)
+```
+analyze
+  │
+  ├── !isProjectRelated
+  │     ├── sender already exists in /data/people (≥90% match)
+  │     │     → refresh `Last email`, `Last updated`. Done.
+  │     └── sender is unknown
+  │           → skip entirely (no orphan create from newsletters)
+  │
+  └── isProjectRelated
+        │
+        ├── Resolve person & company via entity matching
+        │     (knowhow/entity-matching.md, scripts/entity/match.js)
+        │     - ≥90% → auto-link to existing
+        │     - 25-89% → ask Gonzalo (CLI prompt)
+        │     - <25% → create new
+        │
+        ├── Persist person.md and company.md
+        │     - New: create from template with Channel: email, etc.
+        │     - Existing: refresh `Last email`, `Last updated`
+        │
+        ├── 3-criteria gate
+        │     The agent only prompts for verdict when ALL three are
+        │     filled in projectInfo: location, ticket, asset type.
+        │     If any is missing:
+        │       → log interaction (`Email | subject | criteria not yet met`)
+        │       → no verdict prompt, lead stays in `prospecting`
+        │
+        └── Verdict prompt: viable / discarded / pending / skip
+              ├── skip      → no log, no action
+              ├── discarded → log interaction with note "discarded — no project created"
+              ├── pending   → log interaction with note "pending review"
+              └── viable
+                    ├── reserveProjectCode (atomic mkdir of /data/projects/[CODE]/)
+                    ├── createLocalProject  (project.md, log.md, feedback.md)
+                    ├── addActiveProject on person.md (multi-project safe)
+                    ├── set Current stage = `active` on person.md
+                    └── createProjectStructure on Drive
+                          ([CODE] - [City] - [Promoter] / Promoter Files)
+```
 
-## Step 4 — Drive folder creation (for new projects)
-- Folder name format: [CODE] - [City] - [Promoter]
-- Example: ES-001 - Malaga - NZPromocion
-- Create in Cobuildy parallel Drive folder (test environment)
-- Upload attachments to this folder
-- Save Drive folder link in project.md
+## Logging routing
+- Person has at least one active project → log entry goes to that
+  project's `log.md`
+- Person has no project (orphan) → log entry goes to person.md's
+  `## Interactions Log` section
+- Format: `YYYY-MM-DD | Email | [subject] | [next action]`
+- The "project created" entry on a `viable` verdict is written by
+  `fillLogMd` directly into the new project's log.md — no duplication
+  on person.md.
 
-## Step 5 — Confirm and log
-- If a project exists for the sender → add entry to /data/projects/[CODE]/log.md
-- If no project (orphan person) → add entry to person.md `Interactions Log`
-- Update `Last email:` field on person.md regardless
-- Format: YYYY-MM-DD | Email | [summary] | [next action]
+## Drive folder format
+`[CODE] - [City] - [Promoter]` — example: `ES-001 - Olcoz - Carlos S. del Arco`
+Subfolder: `Promoter Files` (the share the promoter uploads docs to).
 
-## Outbound Emails — Rules
-
-## Trigger
-Gonzalo sends an email from gonzalog@cobuildy.com
-
-## Step 1 — Identify the recipient
-- Run entity matching against /data/people and /data/companies
-- Follow rules defined in /knowhow/entity-matching.md
-
-## Step 2 — Analyze the email content
-- Does it contain attachments? → note file name, type
-- Is it sending a project ficha to an investor? → log in feedback.md
-- Is it a follow-up to an existing conversation?
-- Is it requesting documents from a promoter?
-
-## Step 3 — Log the interaction
-- Add entry to the relevant log.md
-- Format: YYYY-MM-DD | Email (outbound) | [summary] | [next action]
-- If a project ficha was sent to an investor → add entry in feedback.md:
-  INV-00X | YYYY-MM-DD | Email | Ficha sent | Pending feedback
+## What this agent does NOT do
+- Process outbound emails (read-only on INBOX for now)
+- Upload attachments to Drive (agent creates the folder; manual upload)
+- Push leads to Kommo or any external system (deferred)
+- Auto-respond / send any message

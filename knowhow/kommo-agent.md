@@ -7,6 +7,8 @@ Kommo notes written by the team are a key source of project information.
 
 ## Pipelines in Kommo
 - **Developers** → promoter leads from ads and WhatsApp Business
+- **Developers Linkedin** → leads from LinkedIn outreach (push target for
+  warm leads from `linkedin-agent`; see `knowhow/linkedin-agent.md`)
 - **Private Investors** → investor leads (managed by Dona)
 
 ## Data Kommo captures automatically
@@ -26,9 +28,11 @@ Kommo notes written by the team are a key source of project information.
 - Follow rules in /knowhow/entity-matching.md
 
 ### Step 2 — Create or update entity
-- If new → create person.md from template
-- If existing → update identities section with Kommo ID and phone
-- Add Kommo ID to person.md identities
+- If new → create person.md from template with `Channel: kommo`,
+  `Current stage: prospecting`
+- If existing → update Identities section: set `Kommo Lead ID:` and
+  `Kommo Contact ID:` if not already set; refresh `Phone:` / `Email:`
+  if missing
 
 ### Step 3 — Log the interaction
 - If person has an active project → log to that project's `log.md`
@@ -77,14 +81,16 @@ Kommo notes written by the team are a key source of project information.
 - **discarded** → log reason in person.md, no project created
 - **pending** → log in person.md, schedule follow-up
 
-## Drive Folder Creation (separate hito)
-- Drive folder is created only when first physical document is received
-- Project code is already assigned at this point
-- Folder name: [CODE] - [City] - [Promoter]
-- Example: ES-001 - Asturias - LunaGrupo
+## Drive Folder Creation
+- Drive folder is created at the moment the project is reserved
+  (`viable` verdict). It is not gated on document arrival anymore.
+- Folder name: `[CODE] - [City] - [Promoter]`
+- Example: `ES-001 - Olcoz - Inversiones Polandrius`
+- Subfolder: `Promoter Files` for everything the promoter uploads.
 
-## Enrich Kommo from the system
-- When a project is created or updated in the repo,
-  add a note in the corresponding Kommo lead with the project code
-  and current status
-- This keeps Kommo informed without making it the SSOT
+## Enrich Kommo from the system (push direction — TBD)
+Future scope: when a project is created/updated in the repo, push
+notes/leads back to Kommo for team visibility (Dona, Danila). Not
+implemented yet. Architecture decision: repo is SSOT, Kommo is a
+read-only summary view that the agent updates. See `CHANGELOG.md`
+for status.
