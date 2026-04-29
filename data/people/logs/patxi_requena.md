@@ -1,6 +1,7 @@
 # patxi_requena — Interactions Log
 _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channel | Summary | Next action)_
 
+2026-04-29 | Meet | Proyecto 34 unidades industrializadas Puello/Navarra; fase 1 €1.08M (4 unifamiliares). | Cobuildy envía contrato 3%; Desait prepara documentación 10-15 días
 2026-04-29 | Email (sent) | Presentación del proyecto de construcción industrializada en Pueyo (Navarra) y envío de contrato de colaboración a Pa… | 
 2026-04-29 | Email (received) | Patxi confirmó recepción de la información y se comprometió a reunir y enviar la documentación necesaria. | 
 2026-04-28 | Kommo | Call scheduled will Gonzalo, tomorrow at 12pm, invites sent. | (by dk@cobuildy.com)

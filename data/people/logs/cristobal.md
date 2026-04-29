@@ -1,6 +1,7 @@
 # cristobal — Interactions Log
 _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channel | Summary | Next action)_
 
+2026-04-28 | Meet | Urbana Home Málaga 16 unidades €7.48M; préstamo €1M (10-10.5% interés). | Cristóbal completa cash flow hoy; tasación próx semana, después presentación inversores
 2026-04-23 | Email (received) | Cristobal de Urbana Home aceptó la reunión de Google Meet programada para el 23 de abril de 2026 a las 11:00–11:30. | 
 2026-04-22 | Kommo | Claude Audit Note (22/04/2026): Projects in Malaga and Almería (22 homes + commercial + parking, &quot;Avenida de la… | (by Danila Valiaev)
 2026-04-15 | Email (received) | Envío de documento firmado; próximamente remitirá documentación de promociones de Málaga y Almería. | 
