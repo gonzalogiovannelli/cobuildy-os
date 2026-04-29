@@ -163,43 +163,87 @@ function appendPersonLog(personSlug, entry) {
   fs.writeFileSync(logPath, text);
 }
 
+// Parse existing log entries from a body string. Supports both legacy
+// (tight stacking, no `---` separators between entries) and new
+// (entries separated by `\n---\n` with optional rich body per entry).
+function parseExistingEntries(body) {
+  const lines = body.split('\n');
+  const entries = [];
+  let current = null;
+  for (const line of lines) {
+    if (line.trim() === '---') {
+      if (current !== null) entries.push(current.trimEnd());
+      current = null;
+      continue;
+    }
+    if (/^\d{4}-\d{2}-\d{2} \|/.test(line)) {
+      if (current !== null) entries.push(current.trimEnd());
+      current = line;
+    } else if (current !== null) {
+      current += '\n' + line;
+    }
+    // else: blank/unrecognised line outside any entry — skip
+  }
+  if (current !== null) entries.push(current.trimEnd());
+  return entries.filter(e => e.trim());
+}
+
+function firstLine(entry) {
+  return entry.split('\n', 1)[0];
+}
+
+// Dedup key:
+//   - Email entries — non-deterministic AI summaries across runs;
+//     collapse on (date, channel-tag).
+//   - Meet entries — short header → full-body upgrade, header text may
+//     change between runs; collapse on (date, channel-tag).
+//   - Kommo / LinkedIn / Call (deterministic content): first 80 chars
+//     of the header line so legitimate same-day notes stay separate.
+function entryKey(entry) {
+  const line = firstLine(entry);
+  const evt = line.match(/^(\d{4}-\d{2}-\d{2}) \| (Email[^|]*|Meet) \|/);
+  if (evt) return `${evt[1]} | ${evt[2].trim()}`;
+  return line.slice(0, 80);
+}
+
 // Insert many entries at once, sorted newest-first by their leading
-// YYYY-MM-DD date. Used by backfill scripts.
-function rebuildPersonLog(personSlug, entries) {
+// YYYY-MM-DD date. Each entry is either a single header line or a
+// header line followed by a multi-line body (e.g. full Granola summary
+// for Meet entries). Entries are written separated by `\n---\n`.
+//
+// opts.replace: when true, new entries overwrite existing ones with
+// the same dedup key. Default false (existing wins — needed for email
+// backfill idempotency where Claude summaries are non-deterministic).
+function rebuildPersonLog(personSlug, newEntries, opts = {}) {
+  const replace = !!opts.replace;
   const logPath = ensurePersonLog(personSlug);
   const text = fs.readFileSync(logPath, 'utf8').replace(/\r\n/g, '\n');
 
-  // Header = everything up to and including the marker comment line.
   const marker = '_(newest first — appended automatically by agents';
   const markerIdx = text.indexOf(marker);
+  let header;
+  let body;
   if (markerIdx < 0) {
-    // Malformed — just write everything fresh.
-    const sorted = [...entries].sort().reverse();
-    fs.writeFileSync(logPath,
-      `# ${personSlug} — Interactions Log\n_(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channel | Summary | Next action)_\n\n${sorted.join('\n')}\n`);
-    return;
+    header = `# ${personSlug} — Interactions Log\n_(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channel | Summary | Next action)_\n`;
+    body = '';
+  } else {
+    const eol = text.indexOf('\n', markerIdx);
+    header = text.slice(0, eol + 1);
+    body   = text.slice(eol + 1);
   }
-  const eol = text.indexOf('\n', markerIdx);
-  const header = text.slice(0, eol + 1);
-  const rest   = text.slice(eol + 1);
 
-  // Existing entries (parse lines starting with a date)
-  const lineRe = /^\d{4}-\d{2}-\d{2} \|/;
-  const existingEntries = rest.split('\n').filter(l => lineRe.test(l));
+  const existingEntries = parseExistingEntries(body);
 
-  const all = [...existingEntries, ...entries];
-  // Dedup key:
-  //   - Email entries (where the AI summary is non-deterministic across
-  //     runs) collapse on (date, channel-tag) — there's at most one
-  //     summary per email-direction-per-day in practice.
-  //   - Other channels (Kommo, LinkedIn, Call, Meet) where the text is
-  //     deterministic fall back to first 80 chars so legit multiple
-  //     same-day notes are preserved.
-  function entryKey(line) {
-    const emailMatch = line.match(/^(\d{4}-\d{2}-\d{2}) \| (Email[^|]*) \|/);
-    if (emailMatch) return `${emailMatch[1]} | ${emailMatch[2].trim()}`;
-    return line.slice(0, 80);
+  let all;
+  if (replace) {
+    // Drop any existing entries whose key matches a new entry's key.
+    const newKeys = new Set(newEntries.map(entryKey));
+    const surviving = existingEntries.filter(e => !newKeys.has(entryKey(e)));
+    all = [...surviving, ...newEntries];
+  } else {
+    all = [...existingEntries, ...newEntries];
   }
+
   const seen = new Set();
   const dedup = [];
   for (const e of all) {
@@ -208,10 +252,11 @@ function rebuildPersonLog(personSlug, entries) {
     seen.add(key);
     dedup.push(e);
   }
-  // Sort newest first by the leading date string (lexicographic == chronological for ISO).
-  dedup.sort((a, b) => b.localeCompare(a));
+  // Sort newest first by date in the header line.
+  dedup.sort((a, b) => firstLine(b).localeCompare(firstLine(a)));
 
-  fs.writeFileSync(logPath, `${header}\n${dedup.join('\n')}\n`);
+  const out = header + '\n' + dedup.join('\n\n---\n\n') + '\n';
+  fs.writeFileSync(logPath, out);
 }
 
 function appendProjectLog(code, entry) {
