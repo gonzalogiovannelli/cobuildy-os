@@ -188,11 +188,22 @@ function rebuildPersonLog(personSlug, entries) {
   const existingEntries = rest.split('\n').filter(l => lineRe.test(l));
 
   const all = [...existingEntries, ...entries];
-  // Dedup: same first 80 chars of an entry → keep one.
+  // Dedup key:
+  //   - Email entries (where the AI summary is non-deterministic across
+  //     runs) collapse on (date, channel-tag) — there's at most one
+  //     summary per email-direction-per-day in practice.
+  //   - Other channels (Kommo, LinkedIn, Call, Meet) where the text is
+  //     deterministic fall back to first 80 chars so legit multiple
+  //     same-day notes are preserved.
+  function entryKey(line) {
+    const emailMatch = line.match(/^(\d{4}-\d{2}-\d{2}) \| (Email[^|]*) \|/);
+    if (emailMatch) return `${emailMatch[1]} | ${emailMatch[2].trim()}`;
+    return line.slice(0, 80);
+  }
   const seen = new Set();
   const dedup = [];
   for (const e of all) {
-    const key = e.slice(0, 80);
+    const key = entryKey(e);
     if (seen.has(key)) continue;
     seen.add(key);
     dedup.push(e);

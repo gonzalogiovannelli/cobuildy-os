@@ -39,7 +39,13 @@ const TOKEN     = (process.env.KOMMO_TOKEN     || '').trim();
 const SUBDOMAIN = (process.env.KOMMO_SUBDOMAIN || '').trim();
 const BASE      = `https://${SUBDOMAIN}.kommo.com/api/v4`;
 
-const PIPELINE_NAME    = 'Developers';
+function getArg(name, defaultValue) {
+  const idx = process.argv.indexOf(`--${name}`);
+  if (idx >= 0 && idx + 1 < process.argv.length) return process.argv[idx + 1];
+  return defaultValue;
+}
+
+const PIPELINE_NAME    = getArg('pipeline', 'Developers');
 const SKIP_STATUSES    = new Set(['Closed - lost', 'Not qualified', 'Closed - won']);
 const RECENCY_MONTHS   = 4;
 const REQ_DELAY_MS     = 150;  // ~6.5 rps, safely under Kommo's ~7 rps limit

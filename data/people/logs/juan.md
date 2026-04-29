@@ -7,6 +7,5 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 2026-04-03 | Kommo | Llamada mañana sabado a confirmar el horario | (by Danila Valiaev)
 2026-04-03 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Construcción ¿Planeas participar en el proyecto con… | (by 0)
 2026-04-03 | Email (sent) | Interesado en hablar mañana; pendiente confirmar si prefiere mañana o tarde. | 
-2026-04-03 | Email (received) | Juan confirmó disponibilidad para hablar mañana tras recibir propuesta de llamada sobre proyecto de 96 viviendas. | 
-2026-04-03 | Email (received) | Acordaron reunirse; el contacto propone las 10h de la mañana como horario para la llamada. | 
+2026-04-03 | Email (received) | Juan confirmó interés y propuso hablar mañana; próximo paso: agendar llamada para discutir proyecto de 96 viviendas. | 
 2026-03-13 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Construcción ¿Planeas participar en el proyecto con… | (by 0)

@@ -6,5 +6,5 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 2026-03-27 | Kommo | Hola Francisco, buenos días. Un placer saludarle de nuevo. Siguiendo con nuestra charla telefónica (siempre es un gus… | (by Danila Valiaev)
 2026-03-24 | Kommo | Se ha llamado nuevamente y no contesa | (by Danila Valiaev)
 2026-03-24 | Kommo | Hable por teléfono y le envíe informacion general para empezar a trabajar. Le pedi agendar una llamada para esta sema… | (by Danila Valiaev)
-2026-03-24 | Email (sent) | Presentadas condiciones de financiación CoBuildy (Senior Loan 10-12%) y solicitada documentación (BP, tasación, licen… | 
+2026-03-24 | Email (sent) | Presentadas condiciones de financiación Cobuildy (Senior Loan 10-12%); Francisco debe aportar Business Plan, tasación… | 
 2026-03-16 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Construcción ¿Planeas participar en el proyecto con… | (by 0)
