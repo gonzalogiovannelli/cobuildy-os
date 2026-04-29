@@ -1,4 +1,4 @@
-# Sergio
+# Sergio (snavarromillan@gmail.com)
 
 ## Identities
 - **Email:** snavarromillan@gmail.com

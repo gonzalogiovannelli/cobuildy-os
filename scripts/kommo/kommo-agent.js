@@ -30,7 +30,7 @@ const { addNote } = require('./kommo.js');
 const { findPersonMatches, findCompanyMatches } = require('../entity/match.js');
 const {
   PEOPLE_DIR, COMPANIES_DIR,
-  today, slugify, setFields, readTemplate,
+  today, slugify, setFields, readTemplate, buildPersonTitle,
   fillCompanyMd,
   updatePersonFields,
 } = require('../entity/persist.js');
@@ -180,7 +180,8 @@ function fillPersonMdKommo(c, lead, statusName, companySlug) {
   const lastSeen  = fmtUnixDate(lead.updated_at);
 
   let text = readTemplate(path.join(PEOPLE_DIR, '_template_person.md'));
-  text = text.replace('# [Full Name]', `# ${c.name}`);
+  const title = buildPersonTitle(c.name, { company: c.company, email: c.email, phone: c.phone });
+  text = text.replace('# [Full Name]', `# ${title}`);
   text = setFields(text, {
     'Email':              c.email,
     'Phone':              c.phone,

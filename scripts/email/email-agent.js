@@ -12,7 +12,7 @@ const { createProjectStructure } = require('../drive/drive.js');
 const { findPersonMatches, findCompanyMatches } = require('../entity/match.js');
 const {
   PEOPLE_DIR, COMPANIES_DIR, PROJECTS_DIR,
-  today, slugify, setFields, readTemplate,
+  today, slugify, setFields, readTemplate, buildPersonTitle,
   fillCompanyMd, fillFeedbackMd,
   updatePersonFields, addActiveProject,
   logEntry, logInteraction,
@@ -127,8 +127,9 @@ function fillPersonMd(analysis, companySlug, projectCode, emailSubject, firstCon
 
   let text = fs.readFileSync(path.join(PEOPLE_DIR, '_template_person.md'), 'utf8').replace(/\r\n/g, '\n');
 
-  // Title
-  text = text.replace('# [Full Name]', `# ${name}`);
+  // Title — disambiguates when the name is just a first name
+  const title = buildPersonTitle(name, { company: analysis.sender?.company, email });
+  text = text.replace('# [Full Name]', `# ${title}`);
 
   // Generic fields — every field listed clears placeholders and fills if value present
   text = setFields(text, {

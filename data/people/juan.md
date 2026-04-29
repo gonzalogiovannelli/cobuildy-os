@@ -1,4 +1,4 @@
-# Juan
+# Juan (info.menaescabias@gmail.com)
 
 ## Identities
 - **Email:** info.menaescabias@gmail.com

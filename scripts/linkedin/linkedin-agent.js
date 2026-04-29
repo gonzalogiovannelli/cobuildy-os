@@ -19,7 +19,7 @@ const { findPersonMatches, findCompanyMatches } = require('../entity/match.js');
 const { createLeadComplex, addNote } = require('../kommo/kommo.js');
 const {
   PEOPLE_DIR, COMPANIES_DIR,
-  today, slugify, setFields, readTemplate,
+  today, slugify, setFields, readTemplate, buildPersonTitle,
   fillCompanyMd,
   updatePersonFields,
   logEntry, logInteraction, appendPersonLog,
@@ -49,7 +49,8 @@ function parseDate(s) {
 function fillPersonMdLinkedIn(row, companySlug, firstContactDate) {
   const date = today();
   let text = readTemplate(path.join(PEOPLE_DIR, '_template_person.md'));
-  text = text.replace('# [Full Name]', `# ${row.employeeName}`);
+  const title = buildPersonTitle(row.employeeName, { company: row.companyName });
+  text = text.replace('# [Full Name]', `# ${title}`);
   text = setFields(text, {
     'Email':              '',
     'Phone':              '',

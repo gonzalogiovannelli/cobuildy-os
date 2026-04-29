@@ -1,4 +1,4 @@
-# Tomas
+# Tomas (herrerotorrestomas1@gmail.com)
 
 ## Identities
 - **Email:** herrerotorrestomas1@gmail.com

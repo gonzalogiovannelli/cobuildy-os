@@ -32,6 +32,19 @@ function readTemplate(p) {
   return fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 }
 
+// Build a person.md title that's still recognisable when the name field
+// only has a first name (e.g. "Javier" from a Marquiz form). Falls back
+// to company → email → phone for the disambiguator.
+function buildPersonTitle(name, { company, email, phone } = {}) {
+  const trimmed = String(name || '').trim();
+  if (!trimmed) return 'Unknown';
+  if (trimmed.split(/\s+/).length >= 2) return trimmed;
+  if (company) return `${trimmed} (${company})`;
+  if (email)   return `${trimmed} (${email})`;
+  if (phone)   return `${trimmed} (${phone})`;
+  return trimmed;
+}
+
 // Replace value after "- **Field:**" on a markdown bullet line. Empty value
 // clears the line (no enum/placeholder leak).
 function setField(text, field, value) {
@@ -179,7 +192,7 @@ function reserveProjectCode() {
 module.exports = {
   PEOPLE_DIR, COMPANIES_DIR, PROJECTS_DIR,
   today, slugify,
-  setField, setFields, readTemplate,
+  setField, setFields, readTemplate, buildPersonTitle,
   fillCompanyMd, fillFeedbackMd,
   updatePersonFields, getActiveProjectCodes, addActiveProject,
   logEntry, appendPersonLog, appendProjectLog, logInteraction,

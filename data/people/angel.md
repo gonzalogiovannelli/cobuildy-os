@@ -1,4 +1,4 @@
-# angel
+# angel (angel.artigao@gmail.com)
 
 ## Identities
 - **Email:** angel.artigao@gmail.com

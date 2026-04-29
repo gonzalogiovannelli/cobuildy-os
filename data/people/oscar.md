@@ -1,4 +1,4 @@
-# Oscar
+# Oscar (oscardomingo05@gmail.com)
 
 ## Identities
 - **Email:** oscardomingo05@gmail.com
