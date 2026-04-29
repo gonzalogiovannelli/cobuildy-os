@@ -14,3 +14,7 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 ---
 
 2026-04-01 | Kommo | He said to me that he spoke with Daniil last year and he was hoping that we will call again. He is a developer in PT,… | (by dk@cobuildy.com)
+
+---
+
+2026-04-01 | Call | (outbound, 9m33) handled by @Dona Karamanga | #3646280318 · [audio](https://assets.aircall.io/calls/3646280318/recording) <!-- aircall:3646280318 -->

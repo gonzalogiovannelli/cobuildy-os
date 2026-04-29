@@ -21,4 +21,8 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-01 | Call | (outbound, 30s) no answer | #3645716841 <!-- aircall:3645716841 -->
+
+---
+
 2026-03-31 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Construcción ¿Planeas participar en el proyecto con… | (by 0)

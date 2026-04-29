@@ -6,3 +6,7 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 ---
 
 2026-04-29 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Legalización ¿Planeas participar en el proyecto con… | (by 0)
+
+---
+
+2026-04-29 | Call | (outbound, 11m34) handled by @Gonzalo Giovannelli | #3726758178 · [audio](https://assets.aircall.io/calls/3726758178/recording) <!-- aircall:3726758178 -->

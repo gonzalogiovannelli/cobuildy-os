@@ -5,11 +5,27 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-29 | Call | (outbound, 11s) no answer | #3726938992 <!-- aircall:3726938992 -->
+
+---
+
+2026-04-10 | Call | (outbound, 3s) no answer | #3671621438 <!-- aircall:3671621438 -->
+
+---
+
+2026-04-10 | Call | (outbound, 26s) handled by @Gonzalo Giovannelli | #3671624583 · [audio](https://assets.aircall.io/calls/3671624583/recording) <!-- aircall:3671624583 -->
+
+---
+
 2026-04-04 | Kommo | 2 Proyectos en Malaga y Sevilla de 96 y 40 viviendas pero busca un senior loan al 5-6% no es target. Por otro lado, t… | (by Danila Valiaev)
 
 ---
 
 2026-04-04 | Email (sent) | Presentación de Cobuildy para financiar Hospital en Cádiz (18M€, equity); próximo paso: cargar documentación en la pl… |
+
+---
+
+2026-04-04 | Call | (outbound, 7m22) handled by @Gonzalo Giovannelli | #3654053346 · [audio](https://assets.aircall.io/calls/3654053346/recording) <!-- aircall:3654053346 -->
 
 ---
 
@@ -26,6 +42,10 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 ---
 
 2026-04-03 | Email (received) | Juan confirmó interés y propuso hablar mañana; próximo paso: agendar llamada para discutir proyecto de 96 viviendas. |
+
+---
+
+2026-04-03 | Call | (outbound, 46s) handled by @Gonzalo Giovannelli | #3652472203 · [audio](https://assets.aircall.io/calls/3652472203/recording) <!-- aircall:3652472203 -->
 
 ---
 

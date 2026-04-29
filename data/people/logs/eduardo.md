@@ -13,4 +13,8 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-27 | Call | (outbound, 40s) handled by @Gonzalo Giovannelli | #3717822700 · [audio](https://assets.aircall.io/calls/3717822700/recording) <!-- aircall:3717822700 -->
+
+---
+
 2026-04-26 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Adquisición de terreno ¿Planeas participar en el pr… | (by 0)

@@ -192,15 +192,20 @@ function firstLine(entry) {
   return entry.split('\n', 1)[0];
 }
 
-// Dedup key:
-//   - Email entries — non-deterministic AI summaries across runs;
-//     collapse on (date, channel-tag).
-//   - Meet entries — short header → full-body upgrade, header text may
-//     change between runs; collapse on (date, channel-tag).
-//   - Kommo / LinkedIn / Call (deterministic content): first 80 chars
-//     of the header line so legitimate same-day notes stay separate.
+// Dedup key, in priority order:
+//   1. Explicit `<!-- src:ID -->` markers in the header line. Most
+//      precise — used for events that have a stable upstream ID
+//      (aircall:CALL_ID, kn:NOTE_ID, mid:MESSAGE_ID hash, etc.).
+//   2. Email and Meet → (date, channel-tag). Their summaries are
+//      non-deterministic (Email AI summary) or rewritten on upgrade
+//      (Meet short → full body), so we can't rely on text identity.
+//   3. Other channels (Kommo, LinkedIn, raw Call without marker) →
+//      first 80 chars of the header line. Deterministic content stays
+//      unique across re-runs.
 function entryKey(entry) {
   const line = firstLine(entry);
+  const markerM = line.match(/<!--\s*([a-z]+):([A-Za-z0-9_-]+)\s*-->/);
+  if (markerM) return `${markerM[1]}:${markerM[2]}`;
   const evt = line.match(/^(\d{4}-\d{2}-\d{2}) \| (Email[^|]*|Meet) \|/);
   if (evt) return `${evt[1]} | ${evt[2].trim()}`;
   return line.slice(0, 80);

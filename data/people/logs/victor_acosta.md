@@ -5,7 +5,15 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-29 | Call | (outbound, 1m04) handled by @Dona Karamanga | #3726848107 · [audio](https://assets.aircall.io/calls/3726848107/recording) <!-- aircall:3726848107 -->
+
+---
+
 2026-04-28 | Kommo | called, no answer - https://isxhomeworld.com/ | (by dk@cobuildy.com)
+
+---
+
+2026-04-28 | Call | (outbound, 49s) no answer | #3722555912 <!-- aircall:3722555912 -->
 
 ---
 

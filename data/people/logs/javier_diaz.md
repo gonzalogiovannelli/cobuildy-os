@@ -5,6 +5,10 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-20 | Call | (outbound, 2m10) handled by @Gonzalo Giovannelli | #3698392216 · [audio](https://assets.aircall.io/calls/3698392216/recording) <!-- aircall:3698392216 -->
+
+---
+
 2026-04-16 | Email (sent) | Propuesta de reparto de comisión (2,5% de 3%) por conflicto con intermediario; próximo paso: confirmar acuerdo para q… |
 
 ---
@@ -18,6 +22,10 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 ---
 
 2026-04-08 | Email (received) | Envió el Excel con el 100% de las ventas en el mes de finalización; pendiente de revisión del archivo adjunto. |
+
+---
+
+2026-04-06 | Call | (outbound, 2m05) handled by @Gonzalo Giovannelli | #3655459711 · [audio](https://assets.aircall.io/calls/3655459711/recording) <!-- aircall:3655459711 -->
 
 ---
 

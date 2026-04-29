@@ -53,6 +53,10 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-29 | Call | (outbound, 1m23) handled by @Gonzalo Giovannelli | #3726122884 · [audio](https://assets.aircall.io/calls/3726122884/recording) <!-- aircall:3726122884 -->
+
+---
+
 2026-04-28 | Kommo | Call scheduled will Gonzalo, tomorrow at 12pm, invites sent. | (by dk@cobuildy.com)
 
 ---
@@ -61,4 +65,12 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-28 | Call | (outbound, 5m54) handled by @Dona Karamanga | #3722505689 · [audio](https://assets.aircall.io/calls/3722505689/recording) <!-- aircall:3722505689 -->
+
+---
+
 2026-04-27 | Kommo | ¿Qué etapa es más relevante para el estado actual de tu proyecto? Construcción ¿Planeas participar en el proyecto con… | (by 0)
+
+---
+
+2026-04-27 | Call | (outbound, 35s) no answer | #3719950981 <!-- aircall:3719950981 -->

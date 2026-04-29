@@ -5,7 +5,15 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-29 | Call | (outbound, 49s) no answer | #3726844639 <!-- aircall:3726844639 -->
+
+---
+
 2026-04-28 | Kommo | called, no answer | (by dk@cobuildy.com)
+
+---
+
+2026-04-28 | Call | (outbound, 53s) no answer | #3722546617 <!-- aircall:3722546617 -->
 
 ---
 

@@ -5,6 +5,14 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-09 | Call | (outbound, 24s) handled by @Gonzalo Giovannelli | #3668121049 · [audio](https://assets.aircall.io/calls/3668121049/recording) <!-- aircall:3668121049 -->
+
+---
+
+2026-04-07 | Call | (outbound, 31s) no answer | #3659589664 <!-- aircall:3659589664 -->
+
+---
+
 2026-03-27 | Kommo | Lo llame, no habia visto el correo que le habia enviado, lo mirara y hablaremos el lunes | (by Danila Valiaev)
 
 ---

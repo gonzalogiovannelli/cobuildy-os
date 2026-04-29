@@ -17,6 +17,14 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-03-23 | Call | (outbound, 17s) no answer | #3616705173 <!-- aircall:3616705173 -->
+
+---
+
+2026-03-23 | Call | (inbound, 30s) handled by @Dona Karamanga | #3616896337 · [audio](https://assets.aircall.io/calls/3616896337/recording) <!-- aircall:3616896337 -->
+
+---
+
 2026-03-22 | Email (received) | Angelo evalúa 3 opciones para terreno en Fuerteventura (tokenizar, venta normal o reinvertir); próximo paso: agendar… |
 
 ---

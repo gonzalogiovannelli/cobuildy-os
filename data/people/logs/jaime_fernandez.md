@@ -5,6 +5,10 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 
 ---
 
+2026-04-13 | Call | (outbound, 1m18) handled by @Gonzalo Giovannelli | #3675925395 · [audio](https://assets.aircall.io/calls/3675925395/recording) <!-- aircall:3675925395 -->
+
+---
+
 2026-04-09 | Kommo | sent email requesting the docs. | (by Danila Valiaev)
 
 ---
@@ -14,6 +18,18 @@ _(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channe
 ---
 
 2026-04-09 | Email (sent) | Presentación de condiciones de financiación (~950k€, 10-12% anual) y solicitud de documentación para subir el proyect… |
+
+---
+
+2026-04-09 | Call | (outbound, 15m45) handled by @Gonzalo Giovannelli | #3667157609 · [audio](https://assets.aircall.io/calls/3667157609/recording) <!-- aircall:3667157609 -->
+
+---
+
+2026-04-06 | Call | (outbound, 23s) handled by @Gonzalo Giovannelli | #3655329606 · [audio](https://assets.aircall.io/calls/3655329606/recording) <!-- aircall:3655329606 -->
+
+---
+
+2026-04-06 | Call | (outbound, 23s) handled by @Gonzalo Giovannelli | #3655300368 · [audio](https://assets.aircall.io/calls/3655300368/recording) <!-- aircall:3655300368 -->
 
 ---
 
