@@ -126,18 +126,81 @@ function logEntry(channel, summary, nextAction) {
   return `${today()} | ${channel} | ${summary} | ${nextAction}`;
 }
 
-function appendPersonLog(personSlug, entry) {
-  const filePath = path.join(PEOPLE_DIR, `${personSlug}.md`);
-  let text = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
-  const marker = '_(newest first — appended automatically by agents)_';
-  if (text.includes(marker)) {
-    text = text.replace(marker, `${marker}\n\n${entry}`);
-  } else if (text.includes('## Interactions Log')) {
-    text = text.replace('## Interactions Log', `## Interactions Log\n\n${entry}`);
+// Append an entry to the per-person sidecar log file. Creates the log
+// file from template if it doesn't exist yet (lazy initialisation).
+// Newest entry stays at the top so the file reads reverse-chronological.
+const PEOPLE_LOGS_DIR = path.join(PEOPLE_DIR, 'logs');
+
+function ensurePersonLog(personSlug) {
+  const logPath = path.join(PEOPLE_LOGS_DIR, `${personSlug}.md`);
+  if (fs.existsSync(logPath)) return logPath;
+  if (!fs.existsSync(PEOPLE_LOGS_DIR)) fs.mkdirSync(PEOPLE_LOGS_DIR, { recursive: true });
+  const tplPath = path.join(PEOPLE_LOGS_DIR, '_template_person_log.md');
+  let body = '';
+  if (fs.existsSync(tplPath)) {
+    body = readTemplate(tplPath).replace('[Slug]', personSlug);
   } else {
-    text = text.trimEnd() + `\n\n## Interactions Log\n\n${entry}\n`;
+    body = `# ${personSlug} — Interactions Log\n_(newest first — appended automatically by agents)_\n`;
   }
-  fs.writeFileSync(filePath, text);
+  fs.writeFileSync(logPath, body);
+  return logPath;
+}
+
+function appendPersonLog(personSlug, entry) {
+  const logPath = ensurePersonLog(personSlug);
+  let text = fs.readFileSync(logPath, 'utf8').replace(/\r\n/g, '\n');
+  const marker = '_(newest first — appended automatically by agents';
+  const idx = text.indexOf(marker);
+  if (idx >= 0) {
+    // Insert right after the marker line.
+    const eol = text.indexOf('\n', idx);
+    const before = text.slice(0, eol + 1);
+    const after  = text.slice(eol + 1);
+    text = `${before}\n${entry}\n${after}`;
+  } else {
+    text = text.trimEnd() + `\n\n${entry}\n`;
+  }
+  fs.writeFileSync(logPath, text);
+}
+
+// Insert many entries at once, sorted newest-first by their leading
+// YYYY-MM-DD date. Used by backfill scripts.
+function rebuildPersonLog(personSlug, entries) {
+  const logPath = ensurePersonLog(personSlug);
+  const text = fs.readFileSync(logPath, 'utf8').replace(/\r\n/g, '\n');
+
+  // Header = everything up to and including the marker comment line.
+  const marker = '_(newest first — appended automatically by agents';
+  const markerIdx = text.indexOf(marker);
+  if (markerIdx < 0) {
+    // Malformed — just write everything fresh.
+    const sorted = [...entries].sort().reverse();
+    fs.writeFileSync(logPath,
+      `# ${personSlug} — Interactions Log\n_(newest first — appended automatically by agents. Format: YYYY-MM-DD | Channel | Summary | Next action)_\n\n${sorted.join('\n')}\n`);
+    return;
+  }
+  const eol = text.indexOf('\n', markerIdx);
+  const header = text.slice(0, eol + 1);
+  const rest   = text.slice(eol + 1);
+
+  // Existing entries (parse lines starting with a date)
+  const lineRe = /^\d{4}-\d{2}-\d{2} \|/;
+  const existingEntries = rest.split('\n').filter(l => lineRe.test(l));
+
+  const all = [...existingEntries, ...entries];
+  // Dedup: same first 80 chars of an entry → keep one.
+  const seen = new Set();
+  const dedup = [];
+  for (const e of all) {
+    const key = e.slice(0, 80);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    dedup.push(e);
+  }
+  // Sort newest first by the leading date string (lexicographic == chronological for ISO).
+  dedup.sort((a, b) => b.localeCompare(a));
+
+  fs.writeFileSync(logPath, `${header}\n${dedup.join('\n')}\n`);
 }
 
 function appendProjectLog(code, entry) {
@@ -190,11 +253,12 @@ function reserveProjectCode() {
 }
 
 module.exports = {
-  PEOPLE_DIR, COMPANIES_DIR, PROJECTS_DIR,
+  PEOPLE_DIR, COMPANIES_DIR, PROJECTS_DIR, PEOPLE_LOGS_DIR,
   today, slugify,
   setField, setFields, readTemplate, buildPersonTitle,
   fillCompanyMd, fillFeedbackMd,
   updatePersonFields, getActiveProjectCodes, addActiveProject,
-  logEntry, appendPersonLog, appendProjectLog, logInteraction,
+  logEntry, ensurePersonLog, appendPersonLog, rebuildPersonLog,
+  appendProjectLog, logInteraction,
   reserveProjectCode,
 };

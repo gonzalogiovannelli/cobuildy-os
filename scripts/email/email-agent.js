@@ -119,7 +119,7 @@ async function analyzeEmail(email) {
 
 // ── Local project scaffolding ─────────────────────────────────────────────────
 
-function fillPersonMd(analysis, companySlug, projectCode, emailSubject, firstContactDate) {
+function fillPersonMd(analysis, companySlug, projectCode, emailSubject, firstContactDate, personSlug) {
   const name  = analysis.sender?.name  || 'Unknown';
   const email = analysis.sender?.email || '';
   const date  = today();
@@ -148,6 +148,7 @@ function fillPersonMd(analysis, companySlug, projectCode, emailSubject, firstCon
     'Last LinkedIn':      '',
     'Last Kommo':         '',
     'Projects':           projectCode ? `/data/projects/${projectCode}` : '',
+    'Log':                personSlug ? `/data/people/logs/${personSlug}.md` : '',
   });
 
   // Company appears in two sections with different formats — handle each explicitly.
@@ -274,7 +275,7 @@ async function createLocalProject(code, analysis, emailSubject, personSlug, pers
   if (personSlug && !personExists) {
     fs.writeFileSync(
       path.join(PEOPLE_DIR, `${personSlug}.md`),
-      fillPersonMd(analysis, companySlug, code, emailSubject),
+      fillPersonMd(analysis, companySlug, code, emailSubject, null, personSlug),
     );
     console.log(`  ✓ Created data/people/${personSlug}.md`);
   }
@@ -378,7 +379,7 @@ async function main() {
     if (personSlug && !personExisting) {
       fs.writeFileSync(
         path.join(PEOPLE_DIR, `${personSlug}.md`),
-        fillPersonMd(result, companySlug, null, email.subject, emailDate),
+        fillPersonMd(result, companySlug, null, email.subject, emailDate, personSlug),
       );
       console.log(`  ✓ Created data/people/${personSlug}.md`);
     } else if (personSlug && personExisting) {

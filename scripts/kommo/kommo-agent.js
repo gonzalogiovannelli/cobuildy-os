@@ -174,7 +174,7 @@ function summarizeContact(contact) {
 
 // ── Person.md filler (kommo channel) ─────────────────────────────────────────
 
-function fillPersonMdKommo(c, lead, statusName, companySlug) {
+function fillPersonMdKommo(c, lead, statusName, companySlug, personSlug) {
   const date      = today();
   const firstSeen = fmtUnixDate(lead.created_at);
   const lastSeen  = fmtUnixDate(lead.updated_at);
@@ -204,6 +204,7 @@ function fillPersonMdKommo(c, lead, statusName, companySlug) {
     'Last Kommo':         lastSeen,
     'Notes':              c.position ? `Position: ${c.position}` : '',
     'Projects':           '',
+    'Log':                personSlug ? `/data/people/logs/${personSlug}.md` : '',
   });
   text = text.replace(
     /- \*\*Company:\*\* \[company_name\.md\]/,
@@ -310,7 +311,7 @@ async function processLead(lead, statusName) {
     }
   } else {
     if (apply) {
-      fs.writeFileSync(personPath, fillPersonMdKommo(c, lead, statusName, companySlug));
+      fs.writeFileSync(personPath, fillPersonMdKommo(c, lead, statusName, companySlug, personSlug));
       log(`✓ Created data/people/${personSlug}.md`);
     } else {
       log(`(would create data/people/${personSlug}.md)`);

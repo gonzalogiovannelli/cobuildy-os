@@ -39,13 +39,5 @@
 
 ## Links
 - **Company:** /data/companies/zoe_home.md
-- **Projects:** 
-
-## Interactions Log
-_(newest first — appended automatically by agents)_
-
-2026-04-29 | LinkedIn | warm reply via outreach to ZOE Home | first conversation
-
-2026-04-29 | LinkedIn | warm reply via outreach to ZOE Home | first conversation
-
-2026-04-28 | LinkedIn | warm reply via outreach to ZOE Home | first conversation
+- **Projects:**
+- **Log:** /data/people/logs/juan_ramirez_taracido.md

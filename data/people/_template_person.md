@@ -40,6 +40,4 @@
 ## Links
 - **Company:** /data/companies/company_name.md
 - **Projects:** /data/projects/ES-00X
-
-## Interactions Log
-_(newest first — appended automatically by agents)_
+- **Log:** /data/people/logs/firstname_lastname.md

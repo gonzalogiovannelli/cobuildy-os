@@ -39,7 +39,5 @@
 
 ## Links
 - **Company:** 
-- **Projects:** 
-
-## Interactions Log
-_(newest first — appended automatically by agents)_
+- **Projects:**
+- **Log:** /data/people/logs/fran_asensio.md

@@ -46,7 +46,7 @@ function parseDate(s) {
   return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
 }
 
-function fillPersonMdLinkedIn(row, companySlug, firstContactDate) {
+function fillPersonMdLinkedIn(row, companySlug, firstContactDate, personSlug) {
   const date = today();
   let text = readTemplate(path.join(PEOPLE_DIR, '_template_person.md'));
   const title = buildPersonTitle(row.employeeName, { company: row.companyName });
@@ -71,6 +71,7 @@ function fillPersonMdLinkedIn(row, companySlug, firstContactDate) {
     'Last Kommo':         '',
     'Notes':              row.info || '',
     'Projects':           '',
+    'Log':                personSlug ? `/data/people/logs/${personSlug}.md` : '',
   });
   // Company appears in two places with different formats — fill both.
   text = text.replace(
@@ -239,7 +240,7 @@ async function processWarmRow(row) {
       'Last updated':  today(),
     });
   } else {
-    fs.writeFileSync(personPath, fillPersonMdLinkedIn(row, companySlug, firstContactStr));
+    fs.writeFileSync(personPath, fillPersonMdLinkedIn(row, companySlug, firstContactStr, personSlug));
     console.log(`  ✓ Created data/people/${personSlug}.md`);
   }
 
