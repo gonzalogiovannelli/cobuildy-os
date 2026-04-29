@@ -1,23 +1,29 @@
 # LinkedIn Agent — Rules and Workflow
 
 ## Purpose
-Convert warm LinkedIn outreach leads into entities in the system. The
-sheet is the SSOT for the outreach pipeline; this agent only acts when a
-lead becomes warm.
+Convert warm LinkedIn outreach leads into entities in the repo and
+push them to the team's Kommo board so Dona / Danila see them in
+their CRM. The Google Sheet is the SSOT for the outreach pipeline;
+this agent only acts when a lead becomes warm.
 
 ## Source of truth
 A Google Sheet maintained manually by Gonzalo:
-- Tab `Developers` → outreach to real estate developers (Gonzalo's column,
-  ignoring Dani's parallel outreach for v1)
-- Tab `Investors` → outreach to investors (Dona) — out of scope for v1
+- Tab `Developers` → outreach to real estate developers (Gonzalo's
+  column; Dani's parallel outreach in cols M-N is ignored for now)
+- Tab `Investors` → outreach to investors (Dona) — out of scope
 
-The sheet ID is in `scripts/.env` as `LINKEDIN_SHEET_ID`.
+Sheet ID is in `scripts/.env` as `LINKEDIN_SHEET_ID` (currently
+`1cR51zYulygDUKc8dEATWsv3ksMMJf7H56clXsDsO6vY`). Read via
+`scripts/linkedin/sheet.js` (Google Sheets API).
 
 ## Pipeline columns (Developers tab)
 | Col | Field | Meaning |
 |-----|-------|---------|
+| B | Company name | Used for company matching / creation |
+| G | LinkedIn URL | Employee profile link |
 | H | Gonzalo connection sent | Date the request was sent |
 | I | Connection accepted | TRUE when accepted |
+| J | Info | Free-text notes on the lead |
 | K | Msg sent | TRUE when first message sent |
 | L | **Reply received** | TRUE → **warm lead, agent acts** |
 
@@ -25,50 +31,57 @@ A row is warm only when `L = TRUE`. The agent ignores everything else.
 
 ## Agent flow
 
-When `node scripts/linkedin/linkedin-agent.js` runs:
+`node scripts/linkedin/linkedin-agent.js`:
 
 1. Read all rows from the `Developers` tab.
 2. Filter to rows where `Reply received = TRUE`.
 3. For each warm row:
    - Run entity matching against `/data/people` (name + company).
-   - **Existing match (≥90%):** refresh `LinkedIn` URL, `Last LinkedIn`,
+   - **Existing match (≥90%)**: refresh `LinkedIn`, `Last LinkedIn`,
      `Last updated` on the existing person.md. Log the interaction.
-   - **No match:** create `person.md` from template with:
-     - `Channel: linkedin`
+   - **No match**: create `person.md` from template with:
      - `Role: promoter`
-     - `LinkedIn:` employee link from col G
+     - `Channel: linkedin`
+     - `Source: linkedin`
      - `Current stage: prospecting`
-     - `First contact date:` parsed from col H if present, else today
+     - `LinkedIn:` employee link (col G)
+     - `First contact date:` from col H if present, else today
      - `Last LinkedIn:` today
-     - `Notes:` content of col J ("Info") if any
-   - If a company name is in col B, run company matching:
-     - Existing company match (≥90%): link the new person.md to it
-     - No match: create `company.md` from template
-   - Log the interaction:
-     - For **new** persons (most warm leads, no project yet) → entry
-       goes to `person.md` `Interactions Log` directly.
-     - For **existing** persons that already have a project (rare on
-       LinkedIn entry but possible) → entry goes to that project's
-       `log.md` via the shared `logInteraction` helper.
+     - `Notes:` content of col J if any
+   - If col B has a company name → run company matching; link existing
+     or create new `company.md` from template.
+4. **Push to Kommo** (`scripts/kommo/kommo.js → createLeadComplex`):
+   - Pipeline: `Developers Linkedin` (ID `13581344`)
+   - Status: `Linkedin Warm Lead` (ID `105198184`)
+   - Atomic Lead + Contact + Company creation
+   - Save returned `Kommo Lead ID` and `Kommo Contact ID` back into the
+     person.md Identities section
+5. Log the interaction (via shared `logInteraction(slug, entry)`):
+   - Active project → `/data/projects/[CODE]/log.md`
+   - Otherwise → `/data/people/logs/<slug>.md` (sidecar)
+   - Format: `YYYY-MM-DD | LinkedIn | <summary from col J> | <next action>`
 
 ## Idempotency
-The agent is safe to re-run. The second pass on the same warm row finds
-the existing person via match, and only refreshes `Last LinkedIn` —
-no duplicates created. Rows on the sheet stay marked `L = TRUE` forever;
-that's fine.
+Safe to re-run. The second pass on the same warm row:
+- Finds the existing person via match
+- Sees `Kommo Lead ID` already set → does not push to Kommo again
+- Refreshes `Last LinkedIn` and `Last updated`
+- No duplicate person, no duplicate Kommo lead
 
-## What the agent does NOT do (v1)
-- Send LinkedIn messages or connection requests (manual)
+Rows on the sheet stay marked `L = TRUE` forever — that's fine.
+
+## What this agent does NOT do
+- Send LinkedIn connection requests or DMs (manual via Sales Navigator)
 - Track Dani's parallel outreach (cols M-N)
 - Process the Investors tab
-- Push leads to Kommo with a `linkedin` tag (deferred to phase 2)
 - Modify the sheet (read-only)
+- Re-push to Kommo if the person already has a `Kommo Lead ID`
 
 ## Daily outreach target
-Goal: 30 new connection requests per day, tracked manually in the sheet.
+30 new connection requests per day, tracked manually in the sheet.
+The agent's job starts only after a reply lands.
 
-## Notes
-- LinkedIn DMs are part of a person's interaction history — once they
-  reply and become a person.md, future LinkedIn touches go to either the
-  project log (if they have one) or person.md `Interactions Log`.
-- Sales Navigator is used by Gonzalo only for outreach.
+## Cross-refs
+- Kommo write house rules: `knowhow/kommo-agent.md`
+- Log routing and dedup: `knowhow/log-architecture.md`
+- Per-channel `Last X` fields: `data/people/_template_person.md`

@@ -1,29 +1,38 @@
 # Email Agent — Rules and Workflow
 
 ## Purpose
-Process emails arriving at Gonzalo's Cobuildy mailbox, identify the sender,
-persist them as a contact in the system, and — if the lead is ripe —
-trigger project creation under Gonzalo's verdict.
+Process emails arriving at Gonzalo's Cobuildy mailbox, identify the
+sender, persist them in the system, log the interaction, and — if the
+lead is ripe — trigger project creation under Gonzalo's verdict.
 
-## Trigger
-Operational mailbox: `gonzalog@cobuildy.com` (IMAP).
-Run manually for now: `node scripts/email/email-agent.js`.
-Pulls the last 20 emails from `INBOX`.
+There are two scripts under `scripts/email/`:
 
-## Pre-filter (cheap)
-Before invoking the LLM, apply a keyword/attachment heuristic to skip
-clearly irrelevant emails:
-- Email has an attachment → keep
-- Subject or sender contains: `proyecto`, `inversión`, `financiación`,
+- **`email-agent.js`** — interactive, processes the latest INBOX
+  messages, prompts Gonzalo for verdicts when criteria are met.
+- **`backfill.js`** — non-interactive, summarises every email between
+  Gonzalo and known persons since the cutoff and writes them to the
+  per-person interaction logs.
+
+## Mailbox / IMAP
+- Account: `gonzalog@cobuildy.com` (IONOS)
+- IMAP folders scanned by `backfill.js`:
+  - `INBOX` (received)
+  - `Elementos enviados` (sent — note the Spanish folder name; the
+    code regex is `/sent|enviados/i` to handle both)
+- Cutoff: `2026-03-17` (configurable in the script)
+
+## `email-agent.js` — interactive flow
+
+### Pre-filter (cheap, no API call)
+Skip clearly irrelevant emails before invoking the LLM:
+- Has an attachment → keep
+- Subject or sender contains `proyecto`, `inversión`, `financiación`,
   `equity`, `ticket`, `urbanización`, `promoción` → keep
 - Otherwise → skip
 
-This avoids API spend on newsletters, automated notifications, etc.
-
-## LLM analysis (one Anthropic call per email)
-The agent sends the email subject, sender, date, attachments and (truncated)
-body to Claude with `entity-matching.md` and this file as system context.
-Claude must return a JSON object with this exact shape:
+### LLM analysis (one Claude call per kept email)
+Sends subject, sender, date, attachments and truncated body to Claude
+Sonnet 4.6. Claude returns:
 
 ```json
 {
@@ -35,68 +44,95 @@ Claude must return a JSON object with this exact shape:
 }
 ```
 
-`company` is the legal/commercial name extracted from signature, body,
-or domain — null when nothing reliable is found.
-
-## Decision flow
+### Decision flow
 
 ```
 analyze
   │
   ├── !isProjectRelated
-  │     ├── sender already exists in /data/people (≥90% match)
-  │     │     → refresh `Last email`, `Last updated`. Done.
-  │     └── sender is unknown
+  │     ├── sender already in /data/people (≥90% match)
+  │     │     → refresh Last email + Last updated. Done.
+  │     └── sender unknown
   │           → skip entirely (no orphan create from newsletters)
   │
   └── isProjectRelated
         │
         ├── Resolve person & company via entity matching
         │     (knowhow/entity-matching.md, scripts/entity/match.js)
-        │     - ≥90% → auto-link to existing
+        │     - ≥90%  → auto-link
         │     - 25-89% → ask Gonzalo (CLI prompt)
-        │     - <25% → create new
+        │     - <25%  → create new
         │
         ├── Persist person.md and company.md
-        │     - New: create from template with Channel: email, etc.
-        │     - Existing: refresh `Last email`, `Last updated`
+        │     New → from template with Channel: email
+        │     Existing → refresh Last email, Last updated
         │
         ├── 3-criteria gate
-        │     The agent only prompts for verdict when ALL three are
-        │     filled in projectInfo: location, ticket, asset type.
-        │     If any is missing:
-        │       → log interaction (`Email | subject | criteria not yet met`)
-        │       → no verdict prompt, lead stays in `prospecting`
+        │     Verdict prompt only when ALL THREE are filled:
+        │       location, ticket, asset type.
+        │     Missing any → log entry with "criteria not yet met",
+        │     no verdict prompt, lead stays prospecting.
         │
         └── Verdict prompt: viable / discarded / pending / skip
               ├── skip      → no log, no action
-              ├── discarded → log interaction with note "discarded — no project created"
-              ├── pending   → log interaction with note "pending review"
+              ├── discarded → log "discarded — no project created"
+              ├── pending   → log "pending review"
               └── viable
-                    ├── reserveProjectCode (atomic mkdir of /data/projects/[CODE]/)
-                    ├── createLocalProject  (project.md, log.md, feedback.md)
-                    ├── addActiveProject on person.md (multi-project safe)
-                    ├── set Current stage = `active` on person.md
+                    ├── reserveProjectCode (atomic mkdir)
+                    ├── createLocalProject (project.md, log.md, feedback.md)
+                    ├── addActiveProject on person.md
+                    ├── set Current stage = active
                     └── createProjectStructure on Drive
                           ([CODE] - [City] - [Promoter] / Promoter Files)
 ```
 
+## `backfill.js` — bulk summarisation
+
+Run: `node scripts/email/backfill.js` (dry run) →
+`node scripts/email/backfill.js --apply`.
+
+For each person in `/data/people/`, find every email since the cutoff
+where they are sender or recipient. For each message:
+
+1. Pre-filter (same heuristic as above) — keep relevant only
+2. Claude summarises subject + body into a one-line summary
+3. Append entry to the person's log:
+   ```
+   YYYY-MM-DD | Email (received) | <summary> | <next action>
+   YYYY-MM-DD | Email (sent)     | <summary> | <next action>
+   ```
+
+### Why direction is in the channel column
+We need `Email (sent)` vs `Email (received)` distinguishable both in
+the channel filter and in dedup. Putting direction in parens keeps
+the channel as a single token and lets `entryKey` collapse on
+`(date, channel-tag)` for re-runs (Claude generates non-deterministic
+summaries across runs — see `log-architecture.md`).
+
+### Idempotency
+Email entries dedup on `(date, channel-tag)` not on text. Re-running
+`--apply` won't multiply entries even though Claude's summaries vary
+slightly each run.
+
 ## Logging routing
-- Person has at least one active project → log entry goes to that
-  project's `log.md`
-- Person has no project (orphan) → log entry goes to person.md's
-  `## Interactions Log` section
-- Format: `YYYY-MM-DD | Email | [subject] | [next action]`
-- The "project created" entry on a `viable` verdict is written by
-  `fillLogMd` directly into the new project's log.md — no duplication
-  on person.md.
+Handled by `logInteraction(slug, entry)` (see `log-architecture.md`):
+- Person has an active project → `/data/projects/[CODE]/log.md`
+- Otherwise → `/data/people/logs/<slug>.md` (sidecar)
+
+The "project created" entry on a `viable` verdict is written by
+`fillLogMd` directly into the new project's log.md — no duplication on
+the person sidecar.
 
 ## Drive folder format
-`[CODE] - [City] - [Promoter]` — example: `ES-001 - Olcoz - Carlos S. del Arco`
-Subfolder: `Promoter Files` (the share the promoter uploads docs to).
+`[CODE] - [City] - [Promoter]` — example:
+`ES-001 - Olcoz - Carlos S. del Arco`. Subfolder: `Promoter Files`
+(promoter uploads docs there).
 
-## What this agent does NOT do
-- Process outbound emails (read-only on INBOX for now)
-- Upload attachments to Drive (agent creates the folder; manual upload)
-- Push leads to Kommo or any external system (deferred)
-- Auto-respond / send any message
+## What these scripts do NOT do
+- They do not auto-respond / send any reply.
+- They do not push leads to Kommo (handled separately).
+- They do not upload attachments to Drive — `email-agent.js` only
+  creates the project folder; uploads are manual for now.
+- `backfill.js` does not create new persons. If a sender isn't already
+  in `/data/people/`, their emails are silently ignored — orphan
+  creation is the live agent's responsibility.
